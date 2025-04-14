@@ -1,0 +1,2 @@
+# JobsSiteProjectVerticalSliceArchitecture
+# JobsSiteProjectVerticalSclice
