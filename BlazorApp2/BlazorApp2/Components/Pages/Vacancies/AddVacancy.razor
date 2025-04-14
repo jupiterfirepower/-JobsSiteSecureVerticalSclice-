@@ -1,0 +1,182 @@
+@page "/vacancies/addvacancy"
+@using BlazorApp2.Components.Shared.Data
+@using BlazorApp2.Contracts
+@using Jobs.DTO
+@using Jobs.DTO.In
+@rendermode InteractiveServer
+
+@inject IWebHostEnvironment env
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IVacancyService VacService
+@inject ICompanyService CompanyService
+
+<div class="card">
+    <h4 class="card-header">Add Vacancy</h4>
+    <div class="card-body" style="width: 400px">
+        <EditForm Model="VacancyModel" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <div class="form-group">
+                <label>Company</label>
+                <InputText @bind-Value="VacancyModel.CompanyName" class="form-control" style="width: 380px"/>
+                <ValidationMessage For="@(() => VacancyModel.CompanyName)" />
+            </div>
+            <div class="form-group" style="width: 200px">
+                <label>Category</label>
+                @if (Categories is not null)
+                {
+                    <InputSelect @bind-Value="VacancyModel.CategoryId" class="form-control" style="width: 200px">
+                        @foreach (var c in Categories)
+                        {
+                            <option value="@c.CategoryId">@c.CategoryName</option>
+                        }
+                    </InputSelect>
+                }
+            </div>
+            <div class="form-group">
+                <label>Title</label>
+                <InputText @bind-Value="VacancyModel.Title" class="form-control" style="width: 380px"/>
+                <ValidationMessage For="@(() => VacancyModel.Title)" />
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <InputTextArea @bind-Value="VacancyModel.Note" class="form-control" rows="4" style="width: 380px"></InputTextArea>
+                <ValidationMessage For="@(() => VacancyModel.Note)" />
+            </div>
+            <div class="form-group">
+                <label>Salary From</label>
+                <InputNumber @bind-Value="VacancyModel.SalaryFrom" class="form-control" style="width: 380px"/>
+                <ValidationMessage For="@(() => VacancyModel.Title)" />
+            </div>
+            <div class="form-group">
+                <label>Salary To</label>
+                <InputNumber @bind-Value="VacancyModel.SalaryTo" class="form-control" style="width: 380px"/>
+                <ValidationMessage For="@(() => VacancyModel.Title)" />
+            </div>
+            <div class="form-group col-md-4">
+                <label>Work Type:</label><br/>
+                @if (SelectablePatterns is not null)
+                {
+                    foreach (var item in SelectablePatterns)
+                    {
+                        <label>@item.Name </label>
+                        <InputCheckbox @bind-Value="@item.IsSelected"/>
+                        <br/>
+                    }
+                }
+            </div>
+            <div class="form-group col-md-4">
+                <label style="width: 150px">Employment Type:</label><br/>
+                @if (SelectableEmploymentTypesPatterns is not null)
+                {
+                    foreach (var item in SelectableEmploymentTypesPatterns)
+                    {
+                        <label>@item.Name </label>
+                        <InputCheckbox @bind-Value="@item.IsSelected"/>
+                        <br/>
+                    }
+                }
+            </div>
+            <!--
+            <div class="form-group col-md-4">
+                <label for="Status">Status: </label>
+                <InputCheckbox @bind-Value="CheckboxViewModel.Status" />
+            </div>
+            
+            <div class="form-group">
+                <label>Company Link</label>
+                <InputText @bind-Value="CompanyModel.Link" type="text" class="form-control" style="width: 380px"/>
+                <ValidationMessage For="@(() => CompanyModel.Link)" />
+            </div>
+            -->
+            <button class="btn btn-primary" style="margin-top: 10px;width: 100px">
+                Add
+            </button>
+            <NavLink href="/Login" class="btn btn-link" style="margin-top: 10px">Cancel</NavLink>
+        </EditForm>
+    </div>
+</div>
+@code {
+    
+    [SupplyParameterFromForm]
+    VacancyData? VacancyModel { get; set; }
+
+    class SelectablePattern
+    {
+        public int Id; 
+        public string Name; 
+        public bool IsSelected;
+    }
+    
+    List<SelectablePattern> SelectablePatterns;
+    List<SelectablePattern> SelectableEmploymentTypesPatterns;
+    List<WorkTypeDto> WorkTypes;
+    List<EmploymentTypeDto> EmploymentTypes;
+    List<CategoryDto> Categories;
+    
+    protected override void OnInitialized()
+    {
+        VacancyModel ??= new VacancyData();
+  
+        var task = Task.Run(async () => await VacService.GetWorkTypesAsync().ConfigureAwait(false));
+        WorkTypes = task.Result;
+        
+        SelectablePatterns = WorkTypes.Select(pat => 
+            new SelectablePattern { Id = pat.WorkTypeId, Name = pat.WorkTypeName }).ToList();
+        
+        var taskEmploymentTypes = Task.Run(async () => await VacService.GetEmploymentTypesAsync().ConfigureAwait(false));
+        EmploymentTypes = taskEmploymentTypes.Result; 
+        
+        SelectableEmploymentTypesPatterns = EmploymentTypes.Select(pat => 
+            new SelectablePattern { Id = pat.EmploymentTypeId, Name = pat.EmploymentTypeName }).ToList();
+
+        var taskCompany = Task.Run(async () => await CompanyService.GetCompanyByIdAsync(1).ConfigureAwait(false));
+        var company = taskCompany.Result;
+        
+        VacancyModel.CompanyId = company.CompanyId;
+        VacancyModel.CompanyName = company.CompanyName;
+        
+        Categories = VacService.GetCategoriesAsync().Result; 
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        VacancyModel ??= new VacancyData();
+        WorkTypes = await VacService.GetWorkTypesAsync().ConfigureAwait(false);
+        SelectablePatterns = WorkTypes.Select(pat => 
+            new SelectablePattern { Id = pat.WorkTypeId, Name = pat.WorkTypeName }).ToList();
+        
+        EmploymentTypes = await VacService.GetEmploymentTypesAsync().ConfigureAwait(false);
+        SelectableEmploymentTypesPatterns = EmploymentTypes.Select(pat => 
+            new SelectablePattern { Id = pat.EmploymentTypeId, Name = pat.EmploymentTypeName }).ToList();
+
+        var company = await CompanyService.GetCompanyByIdAsync(1).ConfigureAwait(false);
+        VacancyModel.CompanyId = company.CompanyId;
+        VacancyModel.CompanyName = company.CompanyName;
+        
+        Categories = await VacService.GetCategoriesAsync().ConfigureAwait(false); 
+    }
+    
+    private async Task OnValidSubmit()
+    {
+        //loading = true;
+        try
+        {
+            var vacancy = new VacancyInDto(0, VacancyModel.CompanyId, VacancyModel.CategoryId,
+                VacancyModel.Title, VacancyModel.Note,
+                SelectablePatterns.Where(x => x.IsSelected).Select(x => x.Id).ToList(),
+                SelectableEmploymentTypesPatterns.Where(x => x.IsSelected).Select(x => x.Id).ToList(),
+                VacancyModel.SalaryFrom, VacancyModel.SalaryTo, true, true
+            );
+            var result = await VacService.AddVacancyAsync(vacancy);
+            Console.WriteLine($"AddVacancyAsync - {result}");
+            NavigationManager.NavigateTo("/account/login");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            //loading = false;
+            StateHasChanged();
+        }
+    }
+}

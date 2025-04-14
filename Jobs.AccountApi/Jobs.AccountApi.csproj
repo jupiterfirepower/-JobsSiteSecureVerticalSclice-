@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+      <UserSecretsId>749a4ca8-1fa4-4065-96c5-17665622504d</UserSecretsId>
+      <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AspNetCore.HealthChecks.Consul" Version="8.0.1" />
+        <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI" Version="8.0.2" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.1" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="8.0.1" />
+        <PackageReference Include="AspNetCore.HealthChecks.Uris" Version="8.0.1" />
+        <PackageReference Include="AutoMapper" Version="13.0.1" />
+        <PackageReference Include="DotNetEnv" Version="3.1.1" />
+        <PackageReference Include="FluentValidation" Version="11.10.0" />
+        <PackageReference Include="Keycloak.Client" Version="0.2.0" />
+        <PackageReference Include="MediatR" Version="12.4.1" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.10" />
+        <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
+        <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+        <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
+        <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+        <PackageReference Include="Serilog.Sinks.OpenTelemetry" Version="4.1.0" />
+        <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
+        <PackageReference Include="Steeltoe.Discovery.Consul" Version="3.2.8" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Jobs.Common\Jobs.Common.csproj" />
+      <ProjectReference Include="..\Jobs.Core\Jobs.Core.csproj" />
+      <ProjectReference Include="..\Jobs.Dto\Jobs.Dto.csproj" />
+      <ProjectReference Include="..\Jobs.Entities\Jobs.Entities.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Data Source=apikeys%3bVersion=3%3bNew=True%3bMode=Memory%3bCache=Shared" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Services\ApiKeyService.cs" />
+      <Compile Remove="Contracts\IApiKeyService.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+
+</Project>

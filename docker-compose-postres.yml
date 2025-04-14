@@ -1,0 +1,347 @@
+version: '3.9'
+
+include:
+  - compose.collector.yaml
+  - compose.tracing.yaml
+
+services:
+  vacancy-api:
+    container_name: vacancy-api
+    image: vacancy-api:latest
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    build:
+      context: . # replace with the actual name of your project
+      dockerfile: Jobs.VacancyApi/Dockerfile
+    ports:
+      - 7112:7112
+    environment:
+      #- ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=https://+:7112
+      - ASPNETCORE_HTTPS_PORT=7112
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetcore.pfx
+    volumes:
+      - ~/.microsoft/usersecrets/:/home/app/.microsoft/usersecrets:ro
+      - ~/.aspnet/https:/https:ro
+
+  reference-api:
+    container_name: reference-api
+    image: reference-api:latest
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    build:
+      context: . # replace with the actual name of your project
+      dockerfile: Jobs.ReferenceApi/Dockerfile
+    ports:
+      - 7007:7007
+    environment:
+      #- ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=https://+:7007
+      #- ASPNETCORE_HTTPS_PORT=7007
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetcore.pfx
+    volumes:
+      - ~/.microsoft/usersecrets/:/home/app/.microsoft/usersecrets:ro
+      - ~/.aspnet/https:/https:ro
+
+  company-api:
+    container_name: company-api
+    image: company-api:latest
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    build:
+      context: . # replace with the actual name of your project
+      dockerfile: Jobs.CompanyApi/Dockerfile
+    ports:
+      - 7057:7057
+    environment:
+      #- ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=https://+:7057
+      #- ASPNETCORE_HTTPS_PORT=7007
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetcore.pfx
+    volumes:
+      - ~/.microsoft/usersecrets/:/home/app/.microsoft/usersecrets:ro
+      - ~/.aspnet/https:/https:ro
+
+  account-api:
+    container_name: account-api
+    image: account-api:latest
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    build:
+      context: . # replace with the actual name of your project
+      dockerfile: Jobs.AccountApi/Dockerfile
+    ports:
+      - 7161:7161
+    environment:
+      #- ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=https://+:7161
+      #- ASPNETCORE_HTTPS_PORT=7007
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetcore.pfx
+    volumes:
+      - ~/.microsoft/usersecrets/:/home/app/.microsoft/usersecrets:ro
+      - ~/.aspnet/https:/https:ro
+
+  gateway-api:
+    container_name: gateway-api
+    image: gateway-api:latest
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    build:
+      context: . # replace with the actual name of your project
+      dockerfile: Jobs.YarpGateway/Dockerfile
+    ports:
+      - 7045:7045
+    environment:
+      #- ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=https://+:7045
+      #- ASPNETCORE_HTTPS_PORT=7007
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetcore.pfx
+    volumes:
+      - ~/.microsoft/usersecrets/:/home/app/.microsoft/usersecrets:ro
+      - ~/.aspnet/https:/https:ro
+
+  vacancy-api-1:
+    container_name: vacancy-api-1
+    image: vacancy-api-1:latest
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    build:
+      context: . # replace with the actual name of your project
+      dockerfile: Jobs.VacancyApi/Dockerfile1  # Dockerfile 1 alpine linux with certs
+    ports:
+      - 7113:7113
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=https://+:7113
+      - ASPNETCORE_HTTPS_PORT=7113
+    volumes:
+      - ~/.microsoft/usersecrets/:/home/app/.microsoft/usersecrets:ro
+      - ~/.aspnet/https:/https:ro
+
+    #networks:
+      #- practical-otel-net
+
+  consul:
+    image: hashicorp/consul:latest
+    container_name: consul
+    ports:
+      - 8500:8500
+
+  vault:
+    image: hashicorp/vault:latest
+    container_name: vault
+    restart: unless-stopped
+    ports:
+      - 8200:8200
+      - 8201:8201
+    cap_add:
+      - IPC_LOCK
+    environment:
+      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_API_ADDR=http://127.0.0.1:8200
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${HOME}/vault/logs:/vault/logs/:rw
+      - ${HOME}/vault/data:/vault/data/:rw
+      - ${HOME}/vault/config:/vault/config/:rw
+      - ${HOME}/vault/certs:/vault/certs/:rw
+      - ${HOME}/vault/file:/vault/file/:rw
+      - ${HOME}/vault/pki:/vault/pki
+      #- ./vault/pki:/vault/pki
+      #- /home/jupiter/volumes/vault/:/vault/:rw
+    healthcheck:
+      retries: 5
+    command: vault server -config=/vault/config/config.hcl
+    #networks:
+    #  - practical-otel-net
+
+  vault-init:
+   image: hashicorp/vault:latest
+   container_name: localsetup-vault-init
+   command:
+     - "sh"
+     - "-c"
+     - "chmod 755 /vault/scripts/vault-init.sh && /vault/scripts/vault-init.sh"
+   environment:
+     VAULT_ADDR: http://vault:8200
+   volumes:
+     - ${HOME}/vault/scripts/:/vault/scripts/
+     - ${HOME}/vault/pki:/vault/pki
+   depends_on:
+     vault:
+       condition: service_started
+   #networks:
+     #- practical-otel-net
+
+  postgres:
+    container_name: postgres-db
+    image: postgres:16-alpine
+    ports:
+      # - "127.0.0.1:5432:5432"
+      - 5432:5432
+    volumes:
+      - /var/lib/postgresql/data
+    environment:
+       - POSTGRES_PASSWORD=newpwd
+       - POSTGRES_USER=admin
+       #- POSTGRES_DB=postgres
+    networks:
+      #- postgres
+      - practical-otel-net
+
+  #redis:
+    #image: redis:7.4.1-alpine
+    #restart: always
+    #ports:
+     # - 6379:6379
+    #command: redis-server --save 3600 1 --cluster-enabled no --loglevel warning --requirepass newpwd --appendonly yes
+    #volumes:
+     # - cache:/data
+    #networks:
+     # - practical-otel-net
+    #environment:
+     # - REDIS_PORT=6379
+     # - REDIS_DATABASES=1
+
+  arangodbdb:
+    container_name: arango-db
+    image: arangodb:latest
+    environment:
+      ARANGO_ROOT_PASSWORD: rootpassword
+    ports:
+      - 8529:8529
+    volumes:
+      - arangodb_data_container:/var/lib/arangodb3
+      - arangodb_apps_data_container:/var/lib/arangodb3-apps
+
+  dragonfly:
+    image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
+    ulimits:
+      memlock: -1
+    command: dragonfly --requirepass "${REDIS_PASSWORD}" --admin_nopass --cache_mode --proactor_threads=4
+    ports:
+      - 6379:6379
+    # For better performance, consider `host` mode instead `port` to avoid docker NAT.
+    # `host` mode is NOT currently supported in Swarm Mode.
+    # https://docs.docker.com/compose/compose-file/compose-file-v3/#network_mode
+    #network_mode: "host"
+    volumes:
+      - dragonflydata:/data
+
+  keycloak:
+      image: quay.io/keycloak/keycloak:latest
+      command: start-dev --http-port=9009
+      #entrypoint: /opt/keycloak/bin/kc.sh start-dev --hostname-strict=false --features=hostname:v1 --hostname-port=8086
+      environment:
+        KC_DB : postgres
+        #KC_DB_URL: postgres-db
+        KC_DB_URL_HOST: postgres-db
+        KC_DB_URL_DATABASE: keycloak
+        KC_DB_USERNAME: admin
+        KC_DB_PASSWORD: newpwd
+        KC_DB_SCHEMA: public
+        KC_HEALTH_ENABLED: true
+        KC_METRICS_ENABLED: true
+        KEYCLOAK_ADMIN: admin
+        KEYCLOAK_ADMIN_PASSWORD: newpwd
+      ports:
+        - 9003:9000
+        - 9001:9009
+      networks:
+        - practical-otel-net
+      depends_on:
+        - postgres
+
+  mssql:
+    container_name: mssql-db
+    user: root
+    #hostname: mssql-db
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_SA_PASSWORD: 'Admin@123'
+      MSSQL_DATA_DIR: /var/opt/mssql/data
+      MSSQL_PID: 'Developer'
+      MSSQL_TCP_PORT: 1433
+    ports:
+      - 1433:1433
+    volumes:
+      - ${HOME}/mssql/data/backup:/var/opt/mssql/backup
+      - ${HOME}/mssql/data/data:/var/opt/mssql/data
+      - ${HOME}/mssql/data/log:/var/opt/mssql/log
+      - ${HOME}/mssql/data/secrets:/var/opt/mssql/secrets
+    networks:
+      - practical-otel-net
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./config-files/prometheus.yaml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.listen-address=:8080'
+    ports:
+      - "8081:8080"
+    environment:
+      - config.file=/etc/prometheus/prometheus.yml
+    networks:
+      - practical-otel-net
+
+  loki:
+    image: grafana/loki:latest
+    command: [ "-config.file=/etc/loki/local-config.yaml" ]
+    networks:
+      - practical-otel-net
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config-files/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    depends_on:
+      - zipkin
+      - prometheus
+      - loki
+      - collector
+    networks:
+      - practical-otel-net
+
+networks:
+  practical-otel-net:
+    name: practical-otel-net
+    driver: bridge
+
+volumes:
+  cache:
+    driver: local
+  dragonflydata:
+  arangodb_data_container:
+  arangodb_apps_data_container:

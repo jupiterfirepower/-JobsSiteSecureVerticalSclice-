@@ -1,0 +1,135 @@
+@page "/account/login"
+
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@using System.Text.Json
+@using BlazorApp2.Components.Layout
+@using BlazorApp2.Components.Shared.Data
+@using BlazorApp2.Contracts
+@using BlazorApp2.Services
+@using Jobs.Entities.Responses
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.BearerToken
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavigationManager
+@inject IAccountService AccountService
+
+<div class="card">
+    <h4 class="card-header">Login</h4>
+    <div class="card-body" style="width: 400px">
+        <EditForm Model="LoginModel" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <div class="form-group" >
+                <label>Username</label>
+                <InputText @bind-Value="LoginModel.Username" class="form-control" style="width: 380px"/>
+                <ValidationMessage For="@(() => LoginModel.Username)" />
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <InputText @bind-Value="LoginModel.Password" type="password" class="form-control" style="width: 380px"/>
+                <ValidationMessage For="@(() => LoginModel.Password)" />
+            </div>
+            <button disabled="@loading" class="btn btn-primary" style="margin-top: 10px;width: 100px">
+                @if (loading)
+                {
+                    <span class="spinner-border spinner-border-sm mr-1"></span>
+                }
+                Login
+            </button>
+            <NavLink href="account/register" class="btn btn-link" style="margin-top: 10px">Register</NavLink>
+            <a href="https://accounts.google.com/o/oauth2/v2/auth?access_type=online&client_id=790743435369-e1anngpl6h3r64blp3prqrk4rn2njfi8.apps.googleusercontent.com
+&redirect_uri=http%3A//localhost:5047/oauth
+&response_type=code
+&scope=email%20profile
+&prompt=consent">Sign In With Google</a>
+        </EditForm>
+    </div>
+</div>
+<!--
+
+ -->
+@code {
+    
+    [SupplyParameterFromForm]
+    LoginData? LoginModel { get; set; }
+    
+    [CascadingParameter] private MainLayout? mainLayout { get; set; }
+
+    protected override void OnInitialized()
+    {
+        LoginModel ??= new LoginData();
+    }
+    
+    private bool loading;
+    
+    private async void OnValidSubmit()
+    {
+        loading = true;
+        try
+        {
+            Console.WriteLine("Login Form OnValidSubmit().");
+            // reset alerts on submit
+            if (!string.IsNullOrEmpty(LoginModel?.Username) && !string.IsNullOrWhiteSpace(LoginModel.Password))
+            {
+                var logged = await AccountService.LoginAsync(LoginModel?.Username!, LoginModel?.Password!);
+                
+                var claimsPrincipal = new ClaimsPrincipal(
+                    new ClaimsIdentity(
+                        new[]
+                        {
+                            new Claim(ClaimTypes.Name, LoginModel?.Username!),
+                            new Claim(ClaimTypes.Role, "admin")
+                        },
+                        
+                        BearerTokenDefaults.AuthenticationScheme
+                    )
+                );
+                HttpContextAccessor?.HttpContext?.SignInAsync(claimsPrincipal);
+                //var r = OwinRequest;
+                //var environment = new OwinEnvironment(context);
+                //IOwinContext owinContext = OwinContext.GetOwinContext();
+                //OwinRequestScopeContext.Current
+                //Console.WriteLine("context.HttpContext != null" +context.HttpContext != null);
+                //context.HttpContext?.SignInAsync(claimsPrincipal);
+                
+                /*var httpClient = new HttpClient();
+        
+                // Form data is typically sent as key-value pairs
+                var adminData = new List<KeyValuePair<string, string>>
+                {
+                    new ("grant_type", "password"),
+                    new ("username", LoginModel?.Username),
+                    new ("password", LoginModel.Password),
+                    new ("client_id", "admin-cli")
+                };
+
+                // Encodes the key-value pairs for the ContentType 'application/x-www-form-urlencoded'
+                HttpContent adminContent = new FormUrlEncodedContent(adminData);
+        
+                var adminResponse = await httpClient.PostAsync("http://localhost:9001/realms/mjobs/protocol/openid-connect/token", adminContent);
+                adminResponse.EnsureSuccessStatusCode();
+
+                var result = await adminResponse.Content.ReadAsStringAsync();
+                var data = JsonSerializer.Deserialize<KeycloakRespone>(result);    
+                Console.WriteLine("AccessToken : " + data.AccessToken);*/
+            }
+            loading = false;
+            mainLayout?.SetLoggedIn(true);
+            NavigationManager.NavigateTo("/");
+        }
+        catch (Exception)
+        {
+            loading = false;
+        }
+    }
+
+    public class LoginData
+    {
+        [Required]
+        public string Username { get; set; }
+
+        [Required]
+        public string Password { get; set; }
+    }
+}

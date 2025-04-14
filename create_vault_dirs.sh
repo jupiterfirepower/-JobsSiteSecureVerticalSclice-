@@ -1,0 +1,1 @@
+mkdir -p $HOME/vault/{config,file,logs,certs,scripts}w

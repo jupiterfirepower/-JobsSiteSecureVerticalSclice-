@@ -1,0 +1,6 @@
+@JobProject_HostAddress = http://localhost:5206
+
+GET {{JobProject_HostAddress}}/vacancies/
+Accept: application/json
+
+###

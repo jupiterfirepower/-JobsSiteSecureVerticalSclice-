@@ -1,0 +1,130 @@
+@page "/company/addcompany"
+@using BlazorApp2.Components.Shared.Data
+@using BlazorApp2.Contracts
+@using Microsoft.AspNetCore.Components.Forms
+@rendermode InteractiveServer
+@inject IWebHostEnvironment env
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor HttpContextAccessor
+@inject ICompanyService CompanyService
+
+<div class="card">
+    <h4 class="card-header">AddCompany</h4>
+    <div class="card-body" style="width: 400px">
+        <EditForm Model="CompanyModel" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <div class="form-group">
+                <label>Company Name</label>
+                <InputText @bind-Value="CompanyModel.Name" class="form-control" style="width: 380px"/>
+                <ValidationMessage For="@(() => CompanyModel.Name)" />
+            </div>
+            <div class="form-group">
+                <label>Company Description</label>
+                <InputTextArea @bind-Value="CompanyModel.Note" class="form-control" rows="4" style="width: 380px"></InputTextArea>
+                <ValidationMessage For="@(() => CompanyModel.Note)" />
+            </div>
+            <div class="form-group">
+                <label>File Upload</label>
+                <InputFile OnChange="UploadFileHandler" class="form-control"/>
+                <!-- <InputFile OnChange="HandleFileSelected" multiple class="form-control"/>  
+                     <button @onclick="ListUploadedFiles">List Uploaded Files</button> -->
+            </div>
+            <div class="form-group">
+                <label>Company Link</label>
+                <InputText @bind-Value="CompanyModel.Link" type="text" class="form-control" style="width: 380px"/>
+                <ValidationMessage For="@(() => CompanyModel.Link)" />
+            </div>
+            <button class="btn btn-primary" style="margin-top: 10px;width: 100px">
+                Add
+            </button>
+            <NavLink href="/Login" class="btn btn-link" style="margin-top: 10px">Cancel</NavLink>
+        </EditForm>
+    </div>
+</div>
+@code {
+    [SupplyParameterFromForm]
+    CompanyData? CompanyModel { get; set; }
+    
+    private string? CurrentFilePath { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        CompanyModel ??= new CompanyData {Name = String.Empty, Note = string.Empty, Link = string.Empty};
+    }
+    
+    private async Task UploadFileHandler(InputFileChangeEventArgs e)
+    {
+        //string rootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "logo");
+        string rootLogoPath = Path.Combine(env.WebRootPath, "logo");
+        
+        if (!Directory.Exists(rootLogoPath))
+        {
+            Directory.CreateDirectory(rootLogoPath);
+        }
+        
+        Console.WriteLine($"RootLogoPath - {rootLogoPath}");
+        var filePath = Path.Combine(rootLogoPath, e.File.Name);
+        Console.WriteLine($"SaveFolder - {rootLogoPath}, FilePath - {filePath}");
+        CurrentFilePath = filePath;
+
+        await using FileStream fs = new(filePath, FileMode.Create);
+        await e.File.OpenReadStream().CopyToAsync(fs);
+    }
+    
+    
+    private List<string> uploadedFiles = new();
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        foreach (var file in  e.GetMultipleFiles())
+        {
+            var filePath = Path.Combine(env.WebRootPath, "Upload", file.Name);
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.OpenReadStream().CopyToAsync(stream);
+            }
+            uploadedFiles.Add(file.Name);
+        }
+    }
+    
+    private void ListUploadedFiles()
+    {
+        var uploadPath = Path.Combine(env.WebRootPath, "Upload");
+        if (Directory.Exists(uploadPath))
+        {
+            var files = Directory.GetFiles(uploadPath);
+            uploadedFiles = files.Select(file => Path.GetFileName(file)).ToList();
+            foreach (var file in uploadedFiles)
+            {
+                Console.WriteLine(file);
+            }
+        }
+    }
+    
+    private async Task OnValidSubmit()
+    {
+        //loading = true;
+        try
+        {
+            var company = await CompanyService.AddCompanyAsync(CompanyModel.Name, CompanyModel.Note,  CurrentFilePath ?? "/logo/blank.png", CompanyModel.Link);
+            
+            string rootLogoPath = Path.Combine(env.WebRootPath, "logo");
+            var ext = Path.GetExtension(CurrentFilePath);
+            
+            var destFilePath = Path.Combine(rootLogoPath, $"{Guid.NewGuid()}{ext}");
+            File.Move(CurrentFilePath, destFilePath);
+            Console.WriteLine("CompanyId: " + company.CompanyId);
+            var update = company with { CompanyLogoPath = destFilePath };
+            Console.WriteLine("CompanyId: " + update.CompanyId);
+            var result = await CompanyService.UpdateCompanyAsync(update);
+
+            //var result = await AccountService.RegisterAsync(UserModel?.Email, UserModel?.Password);
+            NavigationManager.NavigateTo("/account/login");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            //loading = false;
+            StateHasChanged();
+        }
+    }
+}

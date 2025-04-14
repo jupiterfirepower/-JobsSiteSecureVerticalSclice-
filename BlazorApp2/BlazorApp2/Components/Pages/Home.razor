@@ -1,0 +1,35 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.Authentication.OpenIdConnect
+
+@inject NavigationManager Navigation
+@inject IConfiguration Configuration
+
+<div class="row" style="width: 1200px">
+    <table  >
+        <tr>
+            <td height="160px"></td>
+            <td><input type="text" style="width: 850px"/></td>
+            <td>
+                <div class="d-flex justify-content-start align-items-start">
+                    <button type="button" class="btn btn-primary" style="width:300px">Search</button>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+@code {
+private void Login()
+{
+Navigation.NavigateTo("http://localhost:9001/realms/mjobs/protocol/openid-connect/auth?client_id=confmjobs&redirect_uri=http://localhost:9001/signin-oidc&response_type=code&scope=openid");
+}
+
+private void Logout()
+{
+var authority = Configuration["OIDC:Authority"];
+var postLogoutRedirectUri = Configuration["OIDC:PostLogoutRedirectUri"];
+var logoutUrl = $"{authority}/protocol/openid-connect/logout?client_id=myclientid&post_logout_redirect_uri={Navigation.ToAbsoluteUri("/")}";
+Navigation.NavigateTo(logoutUrl, true);
+}
+}

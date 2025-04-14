@@ -1,0 +1,81 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>disable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+      <UserSecretsId>1463c3ee-14b0-43ee-9d7c-b5bee84c451c</UserSecretsId>
+      <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AspNetCore.HealthChecks.Consul" Version="8.0.1" />
+        <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI" Version="8.0.2" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.1" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="8.0.1" />
+        <PackageReference Include="AspNetCore.HealthChecks.Uris" Version="8.0.1" />
+        <PackageReference Include="AutoMapper" Version="13.0.1" />
+        <PackageReference Include="DotNetEnv" Version="3.1.1" />
+        <PackageReference Include="FluentValidation" Version="11.10.0" />
+        <PackageReference Include="Keycloak.AuthServices.Authentication" Version="2.5.3" />
+        <PackageReference Include="Keycloak.Client" Version="0.2.0" />
+        <PackageReference Include="MediatR" Version="12.4.1" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.10" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.10" />
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.10" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" Version="8.0.4" />
+        <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
+        <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+        <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
+        <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+        <PackageReference Include="Serilog.Sinks.OpenTelemetry" Version="4.1.0" />
+        <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0-dev-00310" />
+        <PackageReference Include="Steeltoe.Discovery.Consul" Version="3.2.8" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Jobs.Common\Jobs.Common.csproj" />
+      <ProjectReference Include="..\Jobs.Core\Jobs.Core.csproj" />
+      <ProjectReference Include="..\Jobs.Dto\Jobs.Dto.csproj" />
+      <ProjectReference Include="..\Jobs.Entities\Jobs.Entities.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="EntityModels\**" />
+      <Compile Remove="Services\DataModels\**" />
+      <Compile Remove="KResponses\**" />
+      <Compile Remove="Services\SignedNonceService.cs" />
+      <Compile Remove="Services\ApiKeyService.cs" />
+      <Compile Remove="Services\Contracts\IApiKeyService.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="EntityModels\**" />
+      <EmbeddedResource Remove="Services\DataModels\**" />
+      <EmbeddedResource Remove="KResponses\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="EntityModels\**" />
+      <Content Remove="Services\DataModels\**" />
+      <Content Remove="KResponses\**" />
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="EntityModels\**" />
+      <None Remove="Services\DataModels\**" />
+      <None Remove="KResponses\**" />
+    </ItemGroup>
+
+</Project>

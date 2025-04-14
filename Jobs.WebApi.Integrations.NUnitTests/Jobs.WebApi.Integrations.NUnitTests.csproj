@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>JobsWebApiIntegrationsTests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Dapper" Version="2.1.35" />
+      <PackageReference Include="FluentAssertions" Version="6.12.0" />
+      <PackageReference Include="FluentValidation" Version="11.10.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.8" />
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+      <PackageReference Include="Npgsql" Version="8.0.5" />
+      <PackageReference Include="NUnit" Version="4.2.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Jobs.VacancyApi\Jobs.VacancyApi.csproj" />
+    </ItemGroup>
+
+</Project>

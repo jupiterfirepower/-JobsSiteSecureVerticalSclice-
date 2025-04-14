@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>8117736e-51c9-427f-8011-e7902006a6c0</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="8.0.8" />
+    <PackageReference Include="QAToolKit.Auth" Version="0.2.10" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <ProjectReference Include="..\..\Jobs.Common\Jobs.Common.csproj" />
+    <ProjectReference Include="..\..\Jobs.Core\Jobs.Core.csproj" />
+    <ProjectReference Include="..\..\Jobs.Dto\Jobs.Dto.csproj" />
+    <ProjectReference Include="..\..\Jobs.Entities\Jobs.Entities.csproj" />
+    <ProjectReference Include="..\BlazorApp2.Client\BlazorApp2.Client.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Components\Pages\register.cshtml" />
+    <Content Remove="Components\Pages\Account.cshtml" />
+    <Content Remove="Components\Layout\Register.razor" />
+    <Content Remove="Components\Pages\Register.razor" />
+    <Content Remove="wwwroot\tmplogo\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Components\Pages\register.cshtml.cs" />
+    <Compile Remove="Components\Pages\Account.cshtml.cs" />
+    <Compile Remove="Components\Shared.Data\GlobalAppState.cs" />
+    <Compile Remove="Services.cs" />
+    <Compile Remove="wwwroot\tmplogo\**" />
+    <Compile Remove="Components\Shared.Data\CompanyDto.cs" />
+    <Compile Remove="Contracts\ITypedClientConfig.cs" />
+    <Compile Remove="Settings\TypedClientConfig.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="wwwroot\tmplogo\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="wwwroot\tmplogo\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\tmplogo\bmlp_1101.png" />
+  </ItemGroup>
+
+</Project>

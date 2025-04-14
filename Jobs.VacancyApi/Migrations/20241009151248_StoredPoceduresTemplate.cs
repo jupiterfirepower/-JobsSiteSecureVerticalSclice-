@@ -1,0 +1,108 @@
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace Jobs.VacancyApi.Migrations
+{
+    /// <inheritdoc />
+    public partial class StoredPoceduresTemplate : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            var spSaveVacancyWorkTypes = @$"
+create or replace procedure sp_save_vac_worktypes(
+    in vacancyId int, 
+    in workTypes varchar(10)
+) 
+as 
+$$
+declare
+    v_count integer; 
+    wt_count integer; 
+begin
+    SELECT COUNT(*) INTO v_count FROM ""Vacancies"" t WHERE ""t"".""VacancyId"" = vacancyId;
+
+    WITH t AS (
+  	  SELECT DISTINCT unnest (string_to_array(workTypes,  ',')::integer[]) as worktypeid
+       )
+       SELECT count(t.worktypeid) INTO wt_count
+       FROM t 
+         WHERE NOT EXISTS 
+           (SELECT * 
+              FROM ""WorkTypes"" w
+              WHERE ""w"".""WorkTypeId"" = t.worktypeid);
+
+    if v_count > 0 and wt_count = 0 then
+
+       DELETE FROM ""VacancyWorkTypes"" WHERE ""VacancyId"" = vacancyId;
+
+       WITH t AS (
+  	  SELECT DISTINCT unnest (string_to_array(workTypes,  ',')::integer[]) as worktypeid
+       ), r AS (
+          SELECT t.worktypeid FROM t INNER JOIN ""WorkTypes"" w
+          ON ""w"".""WorkTypeId"" = t.worktypeid
+       )
+       INSERT INTO ""VacancyWorkTypes"" 
+       SELECT vacancyId as VacancyId, r.worktypeid as WorkTypeID FROM r;
+
+    end if;
+
+end;
+$$
+language plpgsql;";
+            migrationBuilder.Sql(spSaveVacancyWorkTypes);
+
+            var spSaveEmploymentTypes = @$"
+create or replace procedure sp_save_vac_emptypes(
+    in vacancyId int, 
+    in empTypes varchar(15)
+) 
+as 
+$$
+declare
+    v_count integer; 
+    et_count integer; 
+begin
+    SELECT COUNT(*) INTO v_count FROM ""Vacancies"" t WHERE ""t"".""VacancyId"" = vacancyId;
+
+    WITH t AS (
+  	  SELECT DISTINCT unnest (string_to_array(empTypes, ',')::integer[]) as emptypeid
+       )
+       SELECT count(t.emptypeid) INTO et_count
+       FROM t 
+         WHERE NOT EXISTS 
+           (SELECT * 
+              FROM ""EmploymentTypes"" e
+              WHERE ""e"".""EmploymentTypeId"" = t.emptypeid);
+
+    if v_count > 0 and et_count = 0 then
+
+       DELETE FROM ""VacancyEmploymentTypes"" WHERE ""VacancyId"" = vacancyId;
+
+       WITH t AS (
+  	  SELECT DISTINCT unnest (string_to_array(empTypes, ',')::integer[]) as emptypeid
+       ), r AS (
+          SELECT t.emptypeid FROM t INNER JOIN ""EmploymentTypes"" e
+          ON ""e"".""EmploymentTypeId"" = t.emptypeid
+       )
+       INSERT INTO ""VacancyEmploymentTypes"" 
+       SELECT vacancyId as VacancyId, r.emptypeid as EmploymentTypeID FROM r;
+
+    end if;
+
+end;
+$$
+language plpgsql;
+";
+            migrationBuilder.Sql(spSaveEmploymentTypes);
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            
+        }
+    }
+}
