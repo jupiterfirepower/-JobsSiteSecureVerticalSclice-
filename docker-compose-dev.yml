@@ -114,34 +114,66 @@ services:
       - ASPNETCORE_ENVIRONMENT=Docker
       - ASPNETCORE_URLS=https://+:7045
       #- ASPNETCORE_HTTPS_PORT=7007
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetcore.pfx
+      #- ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
+      #- ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetcore.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=12345
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/dev-cert/server.cert.pem
+      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/dev-cert/server.key.pem
     volumes:
       - ~/.microsoft/usersecrets/:/home/app/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
+      - ./dev-cert:/dev-cert:ro
 
-  vacancy-api-1:
-    container_name: vacancy-api-1
-    image: vacancy-api-1:latest
+  vacancy-api-3:
+    container_name: vacancy-api-3
+    image: vacancy-api-3:latest
     env_file:
       - .env
     extra_hosts:
       - "host.docker.internal:host-gateway"
     build:
       context: . # replace with the actual name of your project
-      dockerfile: Jobs.VacancyApi/Dockerfile1  # Dockerfile 1 alpine linux with certs
+      dockerfile: Jobs.VacancyApi/Dockerfile3  # Dockerfile 1 alpine linux with certs
     ports:
-      - 7113:7113
+      - 7114:7114
     environment:
-      - ASPNETCORE_ENVIRONMENT=Docker
-      - ASPNETCORE_URLS=https://+:7113
-      - ASPNETCORE_HTTPS_PORT=7113
+      - ASPNETCORE_ENVIRONMENT=Docker3
+      - ASPNETCORE_URLS=https://+:7114
+      - ASPNETCORE_HTTPS_PORT=7114
     volumes:
       - ~/.microsoft/usersecrets/:/home/app/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
+      #- ./dev-cert:/dev-cert:ro
 
     #networks:
       #- practical-otel-net
+
+  gateway-api-3:
+    container_name: gateway-api-3
+    image: gateway-api-3:latest
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    build:
+      context: . # replace with the actual name of your project
+      dockerfile: Jobs.YarpGateway/Dockerfile3
+    ports:
+      - 7046:7046
+    environment:
+      #- ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=https://+:7046
+      #- ASPNETCORE_HTTPS_PORT=7007
+      #- ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
+      #- ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetcore.pfx
+      #- ASPNETCORE_Kestrel__Certificates__Default__Password=12345
+      #- ASPNETCORE_Kestrel__Certificates__Default__Path=/dev-cert/server.cert.pem
+      #- ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/dev-cert/server.key.pem
+    volumes:
+      - ~/.microsoft/usersecrets/:/home/app/.microsoft/usersecrets:ro
+      - ~/.aspnet/https:/https:ro
+      - ./dev-cert:/dev-cert:ro
 
   consul:
     image: hashicorp/consul:latest

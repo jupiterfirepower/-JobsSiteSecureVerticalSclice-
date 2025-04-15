@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Mime;
+using System.Security.Cryptography.X509Certificates;
 using Jobs.Common.Constants;
 using Jobs.YarpGateway.Contracts;
 using Jobs.YarpGateway.Helpers;
@@ -46,6 +47,20 @@ builder.Services.ConfigureHttpClientDefaults(static client =>
 
 //builder.Services.AddConsulClient(builder.Configuration.GetSection("ConsulServiceDiscovery:ConsulClient"));
 
+    /*var clientCert = new X509Certificate2("path");
+    services.AddReverseProxy()
+        .ConfigureHttpClient((context, handler) =>
+        {
+            handler.SslOptions.ClientCertificates.Add(clientCert);
+            
+            handler.SslOptions.ClientCertificates = new X509Certificate2Collection(clientCert);
+        })*/
+
+var clientCert = new X509Certificate2("/dev-cert/client.cert.pem");
+
+var data = File.ReadAllText("/dev-cert/client.cert.pem");
+Console.WriteLine(data);
+
 // Add YARP reverse proxy services and load configuration from appsettings.json
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
@@ -55,6 +70,8 @@ builder.Services.AddReverseProxy()
         handler.AllowAutoRedirect = true;
         handler.MaxConnectionsPerServer = 100;
         handler.EnableMultipleHttp2Connections = true;
+        handler.SslOptions.ClientCertificates = new X509Certificate2Collection(clientCert);
+        //handler.SslOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, errors) => true;
     })
     .AddTransforms(transforms =>
     {
