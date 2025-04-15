@@ -315,9 +315,10 @@ try
             var service = scope.ServiceProvider.GetRequiredService<IApiKeyService>();
             var cryptService = scope.ServiceProvider.GetRequiredService<IEncryptionService>();
 
-            if (context.Response.StatusCode == StatusCodes.Status200OK || 
-                context.Response.StatusCode == StatusCodes.Status201Created ||
-                context.Response.StatusCode == StatusCodes.Status204NoContent
+            if (!context.Request.Path.Equals(HealthConstants.HealthApiPath) && 
+                (context.Response.StatusCode == StatusCodes.Status200OK || 
+                 context.Response.StatusCode == StatusCodes.Status201Created ||
+                 context.Response.StatusCode == StatusCodes.Status204NoContent) 
                )
             {
                 var apiKey = await service.GenerateApiKeyAsync();

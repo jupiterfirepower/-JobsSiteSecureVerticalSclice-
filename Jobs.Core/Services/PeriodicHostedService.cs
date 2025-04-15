@@ -1,6 +1,9 @@
 using Jobs.Core.Contracts.Providers;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace Jobs.AccountApi.Services;
+namespace Jobs.Core.Services;
 
 public class PeriodicHostedService(ILogger<PeriodicHostedService> logger, IServiceScopeFactory factory) : BackgroundService
 {

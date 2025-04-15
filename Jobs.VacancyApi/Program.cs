@@ -279,10 +279,14 @@ try
             using var scope = app.Services.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<IApiKeyService>();
             var cryptService = scope.ServiceProvider.GetRequiredService<IEncryptionService>();
+            
+            //Console.WriteLine("context.Response.OnStarting : " + context.Request.Path);
+            //Console.WriteLine("context.Response.OnStarting : " + context.Request.Protocol);
 
-            if (context.Response.StatusCode == StatusCodes.Status200OK || 
-                context.Response.StatusCode == StatusCodes.Status201Created ||
-                context.Response.StatusCode == StatusCodes.Status204NoContent
+            if (!context.Request.Path.Equals(HealthConstants.HealthApiPath) && 
+                (context.Response.StatusCode == StatusCodes.Status200OK || 
+                 context.Response.StatusCode == StatusCodes.Status201Created ||
+                 context.Response.StatusCode == StatusCodes.Status204NoContent) 
                )
             {
                 var apiKey = await service.GenerateApiKeyAsync();

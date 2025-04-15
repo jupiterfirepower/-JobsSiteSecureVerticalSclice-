@@ -58,9 +58,6 @@ builder.Services.ConfigureHttpClientDefaults(static client =>
 
 var clientCert = new X509Certificate2("/dev-cert/client.cert.pem");
 
-var data = File.ReadAllText("/dev-cert/client.cert.pem");
-Console.WriteLine(data);
-
 // Add YARP reverse proxy services and load configuration from appsettings.json
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
@@ -80,8 +77,6 @@ builder.Services.AddReverseProxy()
             Console.WriteLine(context.HttpContext.Request.Path);
             
             var sessionService = context.HttpContext.RequestServices.GetService<ISessionService>();
-            
-            //var sessionService = new SessionService();
             
             //  CorrelationId
             var correlationId = context.HttpContext.Request.Headers[HttpHeaderKeys.XCorrelationIdHeaderKey].FirstOrDefault() 
@@ -160,8 +155,6 @@ builder.Services.AddHttpLogging(logging =>
 {
     // Customize HTTP logging here.
     logging.LoggingFields = HttpLoggingFields.All;
-    //logging.RequestHeaders.Add("sec-ch-ua");
-    //logging.ResponseHeaders.Add("my-response-header");
     logging.RequestBodyLogLimit = 4096;
     logging.ResponseBodyLogLimit = 4096;
 });
@@ -183,16 +176,6 @@ builder.Services.AddRateLimiter(rateLimiterOptions =>
 });
 
 var app = builder.Build();
-
-/*using var scope = app.Services.CreateScope();
-//var service = scope.ServiceProvider.GetRequiredService<HttpClient>();
-var client = scope.ServiceProvider.GetService<HttpClient>();
-
-// Call an API called `foo` using service discovery
-var response = await client.GetAsync("https://vacancy-service/api/v1/token");
-var body = await response.Content.ReadAsStringAsync();
-
-Console.WriteLine(body);*/
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

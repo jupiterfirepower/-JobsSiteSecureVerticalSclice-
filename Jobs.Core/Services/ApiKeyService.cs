@@ -1,3 +1,4 @@
+using Jobs.Common.Constants;
 using Jobs.Core.Contracts;
 using Jobs.Core.Contracts.Providers;
 using Jobs.Core.DataModel;
@@ -12,7 +13,7 @@ public class ApiKeyService(IApiKeyManagerServiceProvider managerServiceProvider,
         var apiKey = new ApiKey
         {
             Key = ApiKeyGeneratorHelper.GenerateApiKey(),
-            Expiration = DateTime.UtcNow.AddMinutes(30)
+            Expiration = DateTime.UtcNow.AddMinutes(ExpirationConstants.ExpiresAfterMinutes)
         };
         
         var result = await managerServiceProvider.AddApiKeyAsync(apiKey);
@@ -44,7 +45,7 @@ public class ApiKeyService(IApiKeyManagerServiceProvider managerServiceProvider,
     {
         var diff = DateTime.UtcNow.Ticks - nonce;
         
-        if(diff > 0 && diff/TimeSpan.TicksPerSecond <= 5) // less than 5 seconds.
+        if(diff > 0 && diff/TimeSpan.TicksPerSecond <= ExpirationConstants.DiffInSeconds) // less than 5 seconds.
             return true;
         
         return false;

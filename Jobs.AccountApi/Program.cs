@@ -1,46 +1,26 @@
-using System.ComponentModel.DataAnnotations;
-using System.Reflection;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
-using Jobs.AccountApi.Contracts;
-using Jobs.AccountApi.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using OpenTelemetry.Resources;
 using Serilog;
 using AutoMapper;
 using DotNetEnv;
 using Jobs.AccountApi.Extentions;
-using Jobs.AccountApi.Features.Keycloak;
 using Jobs.Common.Constants;
-using Jobs.Common.Extentions;
-using Jobs.Common.Options;
-using Jobs.Common.Responses;
 using Jobs.Common.Settings;
 using Jobs.Core.Contracts;
-using Jobs.Core.Contracts.Providers;
-using Jobs.Core.DataModel;
 using Jobs.Core.Extentions;
 using Jobs.Core.Handlers;
-using Jobs.Core.Helpers;
-using Jobs.Core.Managers;
 using Jobs.Core.Middleware;
 using Jobs.Core.Observability.Options;
 using Jobs.Core.Options;
-using Jobs.Core.Providers;
 using Jobs.Core.Providers.Vault;
-using Jobs.Core.Services;
-using Jobs.Entities.DataModel;
-using Jobs.Entities.Responses;
-using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Serilog.Context;
 using StackExchange.Redis;
 using Steeltoe.Discovery.Client;
 using Steeltoe.Discovery.Consul;
 using VaultSharp.Core;
-using SecretApiService = Jobs.Core.Services.SecretApiService;
 using IApiKeyService = Jobs.Core.Contracts.IApiKeyService;
 
 Log.Logger = new LoggerConfiguration()
@@ -305,9 +285,10 @@ app.Use(async (context, next) =>
         var service = scope.ServiceProvider.GetRequiredService<IApiKeyService>();
         var cryptService = scope.ServiceProvider.GetRequiredService<IEncryptionService>();
 
-        if (context.Response.StatusCode == StatusCodes.Status200OK || 
-            context.Response.StatusCode == StatusCodes.Status201Created ||
-            context.Response.StatusCode == StatusCodes.Status204NoContent
+        if (!context.Request.Path.Equals(HealthConstants.HealthApiPath) && 
+            (context.Response.StatusCode == StatusCodes.Status200OK || 
+             context.Response.StatusCode == StatusCodes.Status201Created ||
+             context.Response.StatusCode == StatusCodes.Status204NoContent) 
            )
         {
             var apiKey = await service.GenerateApiKeyAsync();

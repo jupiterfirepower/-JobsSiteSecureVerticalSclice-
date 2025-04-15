@@ -48,11 +48,11 @@ public static class ConfigureHealthChecksExtension
                 // For Development
                 // vacancy-api-1 not needed that code
                 // ToDo remove this code.
-                opt.UseApiEndpointHttpMessageHandler(_ => {
+                /*opt.UseApiEndpointHttpMessageHandler(_ => {
                     return new HttpClientHandler {
                         ClientCertificateOptions = ClientCertificateOption.Manual, ServerCertificateCustomValidationCallback = (_, _, _, _) => true
                     };
-                });
+                });*/
             })
             .AddInMemoryStorage();
     }
