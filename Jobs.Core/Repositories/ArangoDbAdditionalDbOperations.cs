@@ -114,8 +114,15 @@ public class ArangoDbAdditionalDbOperations(string connectionString, string sysU
 
         // Get databases
         var response = await client.Database.GetDatabasesAsync();
-        response.Result.Where(x=>!x.Equals(SysDbName))
+        
+        // Optimized PipeLine bottom style
+        foreach (var current in response.Result.Where(x=>!x.Equals(SysDbName)))
+        {
+            _ = DeleteDbAsync(current);
+        }
+        /*response.Result
+            .Where(x=>!x.Equals(SysDbName))
             .ToList()
-            .ForEach(x=> _ = DeleteDbAsync(x));
+            .ForEach(x=> _ = DeleteDbAsync(x));*/
     }
 }

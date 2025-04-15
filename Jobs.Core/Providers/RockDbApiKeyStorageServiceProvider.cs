@@ -5,13 +5,11 @@ namespace Jobs.Core.Providers;
 
 public class RockDbApiKeyStorageServiceProvider(ApiKeyRockDbStore store): IApiKeyStorageServiceProvider, IDisposable, IAsyncDisposable
 {
-    private readonly ApiKeyRockDbStore _apiKeyStore = store;
-    
     public bool IsKeyValid(string key)
     {
-        if (_apiKeyStore.HasKey(key))
+        if (store.HasKey(key))
         {
-            _apiKeyStore.TryGet(key, out var apiKey);
+            store.TryGet(key, out var apiKey);
             
             if (apiKey != null && apiKey.Expiration >= DateTime.UtcNow)
             {
@@ -24,9 +22,9 @@ public class RockDbApiKeyStorageServiceProvider(ApiKeyRockDbStore store): IApiKe
     
     public bool IsDefaultKeyValid(string key)
     {
-        if (_apiKeyStore.HasKey(key))
+        if (store.HasKey(key))
         {
-            _apiKeyStore.TryGet(key, out var apiKey);
+            store.TryGet(key, out var apiKey);
             
             if (apiKey is { Expiration: null })
             {
@@ -44,7 +42,7 @@ public class RockDbApiKeyStorageServiceProvider(ApiKeyRockDbStore store): IApiKe
     }
     public void AddApiKey(ApiKey akey)
     {
-        _apiKeyStore.Put(akey.Key, akey);
+        store.Put(akey.Key, akey);
     }
     
     public async Task<bool> AddApiKeyAsync(ApiKey akey)
@@ -56,17 +54,18 @@ public class RockDbApiKeyStorageServiceProvider(ApiKeyRockDbStore store): IApiKe
     public async Task<int> DeleteExpiredKeysAsync()
     {
         int count = 0;
-        _apiKeyStore.GetAll().ToList().ForEach(x=>
+
+        foreach (var current in store.GetAll())
         {
-            _apiKeyStore.TryGet(x.Key, out var apiKey);
+            store.TryGet(current.Key, out var apiKey);
             
-            if (apiKey != null && apiKey.Expiration <= DateTime.Now)
+            if (apiKey != null && apiKey.Expiration <= DateTime.UtcNow)
             {
-                _apiKeyStore.Remove(x.Key);
+                store.Remove(current.Key);
                 count++;
             }
-            
-        });
+        }
+
         return await Task.FromResult(count);
     }
     
@@ -78,10 +77,18 @@ public class RockDbApiKeyStorageServiceProvider(ApiKeyRockDbStore store): IApiKe
         {
             if (disposing)
             {
-                _apiKeyStore.GetAll().ToList().ForEach(x=>_apiKeyStore.Remove(x.Key));
+                ClearApiKeyStore();
             }
         }
         _disposed = true;
+    }
+
+    private void ClearApiKeyStore()
+    {
+        foreach (var current in store.GetAll())
+        {
+            store.Remove(current.Key);
+        }
     }
 
     public void Dispose()
@@ -98,7 +105,7 @@ public class RockDbApiKeyStorageServiceProvider(ApiKeyRockDbStore store): IApiKe
         {
             if (disposing)
             {
-                _apiKeyStore.GetAll().ToList().ForEach(x=>_apiKeyStore.Remove(x.Key));
+                ClearApiKeyStore();
                 await Task.CompletedTask;
                 return;
             }

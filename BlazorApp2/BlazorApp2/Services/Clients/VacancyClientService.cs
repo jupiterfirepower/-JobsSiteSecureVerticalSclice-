@@ -12,8 +12,8 @@ namespace BlazorApp2.Services.Clients;
 
 public class VacancyClientService(HttpClient client, IOptions<ServicesSettings> settings): IVacancyClientService
 {
-    private string? _lastApiKey;
-    private string _serviceBaseUrl = settings.Value.VacancyApiBaseUrl.TrimEnd('/');
+    private string? _lastApiKey = null;
+    private readonly string _serviceBaseUrl = settings.Value.VacancyApiBaseUrl.TrimEnd('/');
 
     private readonly JsonSerializerOptions _jsonSerializerOptions = JsonSerializerSetting.JsonSerializerOptions;
     
@@ -69,11 +69,6 @@ public class VacancyClientService(HttpClient client, IOptions<ServicesSettings> 
         var result = await companyResponse.Content.ReadAsStringAsync();
         Console.WriteLine($"Vacancy Adapted added. - {result}");
         
-        /*var addedCompany = JsonSerializer.Deserialize<VacancyDto>(result, _jsonSerializerOptions);
-        var record = new CompanyDataInDto(addedCompany.CompanyId, addedCompany.CompanyName,
-            addedCompany.CompanyDescription, addedCompany.CompanyLogoPath, addedCompany.CompanyLink,
-            addedCompany.IsVisible, addedCompany.IsActive);*/
-
         return true;
     }
 }

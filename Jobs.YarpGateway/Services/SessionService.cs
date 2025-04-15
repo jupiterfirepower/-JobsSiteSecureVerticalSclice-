@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Jobs.Common.Constants;
 using Jobs.YarpGateway.Contracts;
 using Jobs.YarpGateway.Helpers;
 
@@ -32,8 +33,9 @@ public sealed class SessionService: ISessionService, IDisposable
         
         foreach (var current in _sessions)
         {
-            var dataForRemove = _sessions[current.Key].ToList().Where(x => x.Expires <= now).ToList();
-            dataForRemove.ForEach(d => _sessions[current.Key].Remove(d));
+            var dataForRemove = _sessions[current.Key].Where(x => x.Expires <= now);
+            foreach (var currentApiKey in dataForRemove)
+                _sessions[current.Key].Remove(currentApiKey);
         }
 
         return Task.CompletedTask;
@@ -80,7 +82,7 @@ public sealed class SessionService: ISessionService, IDisposable
     {
         if (_correlationAppId.TryGetValue(correlationId, out var appId))
         {
-            var apiKeyData = new ApiKeyData(apiKey, DateTime.UtcNow.AddMinutes(15));
+            var apiKeyData = new ApiKeyData(apiKey, DateTime.UtcNow.AddMinutes(ExpirationConstants.ExpiresAfterMinutes));
             
             if (_sessions.TryGetValue(appId, out var listApiKeys))
             {
