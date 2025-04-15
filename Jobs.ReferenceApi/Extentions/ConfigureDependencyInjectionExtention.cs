@@ -91,6 +91,9 @@ public static class ConfigureDependencyInjectionExtention
         services.AddScoped<ISignedNonceService, SignedNonceService>();
         services.AddScoped<ISecretApiService, SecretApiService>(p => p.ResolveWith<SecretApiService>(referenceSecretKey));
         
+        services.AddSingleton<PeriodicHostedService>();
+        services.AddHostedService(provider => provider.GetRequiredService<PeriodicHostedService>());
+        
         services.AddAutoMapper(Assembly.GetExecutingAssembly()); // AutoMapper registration
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
     }

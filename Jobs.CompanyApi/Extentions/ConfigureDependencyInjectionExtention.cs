@@ -84,6 +84,9 @@ public static class ConfigureDependencyInjectionExtention
                 Convert.FromBase64String(cryptOptions.IV)));
         services.AddScoped<ISecretApiService, SecretApiService>(p =>
             p.ResolveWith<SecretApiService>(companySecretKey));
+        
+        services.AddSingleton<PeriodicHostedService>();
+        services.AddHostedService(provider => provider.GetRequiredService<PeriodicHostedService>());
 
         services.AddAutoMapper(Assembly.GetExecutingAssembly()); // AutoMapper registration
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
