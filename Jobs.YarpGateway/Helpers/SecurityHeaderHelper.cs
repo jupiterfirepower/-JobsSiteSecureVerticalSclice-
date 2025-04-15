@@ -1,9 +1,10 @@
 using Jobs.Common.Constants;
+using Jobs.Common.Helpers;
 using NUlid;
 
 namespace Jobs.YarpGateway.Helpers;
 
-public class SecurityHeaderHelper
+public static class SecurityHeaderHelper
 {
     public static bool IsHeadersValid(HttpContext context) => IsUserAgentValid(context)
                                                               && IsAppIdValid(context)

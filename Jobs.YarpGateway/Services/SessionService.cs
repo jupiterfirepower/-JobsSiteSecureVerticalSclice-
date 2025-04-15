@@ -19,7 +19,7 @@ public sealed class SessionService: ISessionService, IDisposable
         {
             while(true) {
                 ct.ThrowIfCancellationRequested();
-                await Task.Delay(new TimeSpan(0,10,0), ct);
+                await Task.Delay(new TimeSpan(0,3,0), ct);
                 await Maintain();
             }
         }, ct);

@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace Jobs.YarpGateway.Helpers;
+namespace Jobs.Common.Helpers;
 
 public static class GuidDecoder
 {

@@ -8,11 +8,11 @@ using VaultSharp.Core;
 
 namespace Jobs.YarpGateway.Helpers;
 
-public class ServicesHeadersHelper
+public class ServiceHeadersHelper
 {
     private static readonly ConcurrentDictionary<string, string> Secrets = new();
 
-    static ServicesHeadersHelper()
+    static ServiceHeadersHelper()
     {
         var vacData = LoadVaultSecretValues(ServiceNames.VacancyService,"secrets/services/vacancy").Result;
         var refData = LoadVaultSecretValues(ServiceNames.ReferenceService,"secrets/services/reference").Result;

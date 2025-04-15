@@ -76,7 +76,7 @@ builder.Services.AddReverseProxy()
             
             sessionService.AddSession(appId!, correlationId);
 
-            var helper = new ServicesHeadersHelper();
+            var helper = new ServiceHeadersHelper();
             var currentApiKey = sessionService.GetApiKeyByAppId(context.HttpContext.Request.Path.ToString().EndsWith("/token") ? String.Empty : appId!);
             var (apiKey, secretKey, nonce) = helper.GetHeadersValues(ServiceNames.VacancyService, currentApiKey);
             Console.WriteLine(context.HttpContext.Request.Path);
