@@ -34,7 +34,6 @@ public static class ConfigureHealthChecksExtension
                 option.Port = consulPort;
                 option.RequireHttps = consulRequireHttps;
             }, tags: ["Consul"]);
-            //.AddUrlGroup(new Uri("https://localhost:7111/api/v1/heartbeats/ping"), name: "base URL", failureStatus: HealthStatus.Unhealthy);
             
        var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
        Console.WriteLine($"ConfigureHealthChecks Urls: {urls}");
@@ -43,16 +42,6 @@ public static class ConfigureHealthChecksExtension
                 opt.SetEvaluationTimeInSeconds(60); //time in seconds between check    
                 opt.MaximumHistoryEntriesPerEndpoint(30); //maximum history of checks    
                 opt.SetApiMaxActiveRequests(1); //api requests concurrency    
-                //opt.AddHealthCheckEndpoint("vacancy api", "/api/health"); //map health check api    $"{endpoint}/api/health"
-                
-                // For Development
-                // vacancy-api-1 not needed that code
-                // ToDo remove this code.
-                /*opt.UseApiEndpointHttpMessageHandler(_ => {
-                    return new HttpClientHandler {
-                        ClientCertificateOptions = ClientCertificateOption.Manual, ServerCertificateCustomValidationCallback = (_, _, _, _) => true
-                    };
-                });*/
             })
             .AddInMemoryStorage();
     }

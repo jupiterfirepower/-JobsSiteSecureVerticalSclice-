@@ -73,8 +73,10 @@ public class MemoryApiKeyStorageServiceProvider : IApiKeyStorageServiceProvider
         return await Task.Run(() => { 
             int count = 0;
             
-            var data = _cache.GetAll()
-                                          .Where(x=> x.Expiration.HasValue && x.Expiration.Value < DateTime.UtcNow);
+            var data = _cache
+                .GetAll()
+                .Where(x=> x.Expiration.HasValue && x.Expiration.Value < DateTime.UtcNow);
+            
             // Optimized by performance
             foreach (var current in data)
             {

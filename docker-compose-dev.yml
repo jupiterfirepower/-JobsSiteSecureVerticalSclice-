@@ -5,29 +5,6 @@ include:
   - compose.tracing.yaml
 
 services:
-  vacancy-api:
-    container_name: vacancy-api
-    image: vacancy-api:latest
-    env_file:
-      - .env
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    build:
-      context: . # replace with the actual name of your project
-      dockerfile: Jobs.VacancyApi/Dockerfile
-    ports:
-      - 7112:7112
-    environment:
-      #- ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_ENVIRONMENT=Docker
-      - ASPNETCORE_URLS=https://+:7112
-      - ASPNETCORE_HTTPS_PORT=7112
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetcore.pfx
-    volumes:
-      - ~/.microsoft/usersecrets/:/home/app/.microsoft/usersecrets:ro
-      - ~/.aspnet/https:/https:ro
-
   reference-api:
     container_name: reference-api
     image: reference-api:latest
@@ -37,7 +14,7 @@ services:
       - "host.docker.internal:host-gateway"
     build:
       context: . # replace with the actual name of your project
-      dockerfile: Jobs.ReferenceApi/Dockerfile
+      dockerfile: Jobs.ReferenceApi/Dockerfile3
     ports:
       - 7007:7007
     environment:
@@ -45,8 +22,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Docker
       - ASPNETCORE_URLS=https://+:7007
       #- ASPNETCORE_HTTPS_PORT=7007
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetcore.pfx
+      #- ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
+      #- ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetcore.pfx
     volumes:
       - ~/.microsoft/usersecrets/:/home/app/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
@@ -60,7 +37,7 @@ services:
       - "host.docker.internal:host-gateway"
     build:
       context: . # replace with the actual name of your project
-      dockerfile: Jobs.CompanyApi/Dockerfile
+      dockerfile: Jobs.CompanyApi/Dockerfile3
     ports:
       - 7057:7057
     environment:
@@ -68,8 +45,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Docker
       - ASPNETCORE_URLS=https://+:7057
       #- ASPNETCORE_HTTPS_PORT=7007
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetcore.pfx
+      #- ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
+      #- ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetcore.pfx
     volumes:
       - ~/.microsoft/usersecrets/:/home/app/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
@@ -83,7 +60,7 @@ services:
       - "host.docker.internal:host-gateway"
     build:
       context: . # replace with the actual name of your project
-      dockerfile: Jobs.AccountApi/Dockerfile
+      dockerfile: Jobs.AccountApi/Dockerfile3
     ports:
       - 7161:7161
     environment:
@@ -91,38 +68,11 @@ services:
       - ASPNETCORE_ENVIRONMENT=Docker
       - ASPNETCORE_URLS=https://+:7161
       #- ASPNETCORE_HTTPS_PORT=7007
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetcore.pfx
-    volumes:
-      - ~/.microsoft/usersecrets/:/home/app/.microsoft/usersecrets:ro
-      - ~/.aspnet/https:/https:ro
-
-  gateway-api:
-    container_name: gateway-api
-    image: gateway-api:latest
-    env_file:
-      - .env
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    build:
-      context: . # replace with the actual name of your project
-      dockerfile: Jobs.YarpGateway/Dockerfile
-    ports:
-      - 7045:7045
-    environment:
-      #- ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_ENVIRONMENT=Docker
-      - ASPNETCORE_URLS=https://+:7045
-      #- ASPNETCORE_HTTPS_PORT=7007
       #- ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
       #- ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetcore.pfx
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=12345
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/dev-cert/server.cert.pem
-      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/dev-cert/server.key.pem
     volumes:
       - ~/.microsoft/usersecrets/:/home/app/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
-      - ./dev-cert:/dev-cert:ro
 
   vacancy-api-3:
     container_name: vacancy-api-3

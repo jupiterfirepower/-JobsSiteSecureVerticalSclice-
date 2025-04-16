@@ -68,7 +68,6 @@ builder.Services.AddReverseProxy()
         handler.MaxConnectionsPerServer = 100;
         handler.EnableMultipleHttp2Connections = true;
         handler.SslOptions.ClientCertificates = new X509Certificate2Collection(clientCert);
-        //handler.SslOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, errors) => true;
     })
     .AddTransforms(transforms =>
     {
@@ -89,7 +88,7 @@ builder.Services.AddReverseProxy()
             sessionService.AddSession(appId!, correlationId);
 
             var helper = new ServiceHeadersHelper();
-            var currentApiKey = sessionService.GetApiKeyByAppId(context.HttpContext.Request.Path.ToString().EndsWith("/token") ? String.Empty : appId!);
+            var currentApiKey = sessionService.GetApiKeyByAppId(context.HttpContext.Request.Path.ToString().EndsWith(EndPointParts.TokenPath) ? String.Empty : appId!);
             var (apiKey, secretKey, nonce) = helper.GetHeadersValues(ServiceNames.VacancyService, currentApiKey);
             Console.WriteLine(context.HttpContext.Request.Path);
             Console.WriteLine($"AddRequestTransform ApiKey - {apiKey}");
@@ -104,11 +103,6 @@ builder.Services.AddReverseProxy()
             context.ProxyRequest.Headers.TryAddWithoutValidation(HttpHeaderKeys.XApiSecretHeaderKey, secretKey);
             context.ProxyRequest.Headers.TryAddWithoutValidation(HttpHeaderKeys.XCorrelationIdHeaderKey, correlationId);
             context.ProxyRequest.Headers.TryAddWithoutValidation(HeaderNames.Accept, MediaTypeNames.Application.Json);
-
-            //context.HttpContext.Request.Headers.Append(HeaderNames.ContentType, MediaTypeNames.Application.Json);
-           // Console.WriteLine(context.HttpContext.Request.Host);
-            //context.HttpContext.
-            // implicit parsing
 
             // Copying the headers from the incoming request to the target request
             /*foreach (var header in context.HttpContext.Request.Headers)
@@ -196,7 +190,6 @@ app.Use(async (context, next) =>
 {
     //using (LogContext.PushProperty(HttpHeaderKeys.SerilogCorrelationIdProperty, correlationId))
     //{
-    Console.WriteLine("context.GetEndpoint()");
     if (SecurityHeaderHelper.IsHeadersValid(context))
     {
        await next();
