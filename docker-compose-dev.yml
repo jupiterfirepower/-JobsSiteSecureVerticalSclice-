@@ -98,16 +98,16 @@ services:
     #networks:
       #- practical-otel-net
 
-  gateway-api-3:
-    container_name: gateway-api-3
-    image: gateway-api-3:latest
+  gateway-api:
+    container_name: gateway-api
+    image: gateway-api:latest
     env_file:
       - .env
     extra_hosts:
       - "host.docker.internal:host-gateway"
     build:
       context: . # replace with the actual name of your project
-      dockerfile: Jobs.YarpGateway/Dockerfile3
+      dockerfile: Jobs.YarpGateway/Dockerfile
     ports:
       - 7046:7046
     environment:
