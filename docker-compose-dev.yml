@@ -14,7 +14,7 @@ services:
       - "host.docker.internal:host-gateway"
     build:
       context: . # replace with the actual name of your project
-      dockerfile: Jobs.ReferenceApi/Dockerfile3
+      dockerfile: Jobs.ReferenceApi/Dockerfile
     ports:
       - 7007:7007
     environment:
@@ -37,7 +37,7 @@ services:
       - "host.docker.internal:host-gateway"
     build:
       context: . # replace with the actual name of your project
-      dockerfile: Jobs.CompanyApi/Dockerfile3
+      dockerfile: Jobs.CompanyApi/Dockerfile
     ports:
       - 7057:7057
     environment:
@@ -60,7 +60,7 @@ services:
       - "host.docker.internal:host-gateway"
     build:
       context: . # replace with the actual name of your project
-      dockerfile: Jobs.AccountApi/Dockerfile3
+      dockerfile: Jobs.AccountApi/Dockerfile
     ports:
       - 7161:7161
     environment:
@@ -74,16 +74,16 @@ services:
       - ~/.microsoft/usersecrets/:/home/app/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
 
-  vacancy-api-3:
-    container_name: vacancy-api-3
-    image: vacancy-api-3:latest
+  vacancy-api:
+    container_name: vacancy-api
+    image: vacancy-api:latest
     env_file:
       - .env
     extra_hosts:
       - "host.docker.internal:host-gateway"
     build:
       context: . # replace with the actual name of your project
-      dockerfile: Jobs.VacancyApi/Dockerfile3  # Dockerfile 1 alpine linux with certs
+      dockerfile: Jobs.VacancyApi/Dockerfile # Dockerfile 1 alpine linux with certs
     ports:
       - 7114:7114
     environment:
