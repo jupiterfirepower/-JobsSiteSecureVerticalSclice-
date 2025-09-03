@@ -53,9 +53,20 @@ public class ApiKeyService(IApiKeyManagerServiceProvider managerServiceProvider,
     
     private bool IsSecretApiKeyValid(string realSecretApiKey) => secretService.SecretApi.Equals(realSecretApiKey);
     
-    public bool IsValid(string apiKey, long nonce, string realSecretApiKey) => IsValidApiKey(apiKey) 
+    /*public bool IsValid(string apiKey, long nonce, string realSecretApiKey) => IsValidApiKey(apiKey) 
                                                                                && IsNonceValid(nonce) 
-                                                                               && IsSecretApiKeyValid(realSecretApiKey);
+                                                                               && IsSecretApiKeyValid(realSecretApiKey);*/
+    
+    public bool IsValid(string apiKey, long nonce, string realSecretApiKey)
+    {
+        var validApiKey = IsValidApiKey(apiKey);
+        var validNonce = IsNonceValid(nonce);
+        var validSecretKey = IsSecretApiKeyValid(realSecretApiKey);
+        Console.WriteLine($"ApiKeyService validApiKey - {validApiKey} {apiKey}");
+        Console.WriteLine($"ApiKeyService validNonce - {validNonce} {nonce}");
+        Console.WriteLine($"ApiKeyService validSecretKey - {validSecretKey} {realSecretApiKey}");
+        return validApiKey && validNonce && validSecretKey;
+    } 
     
     public bool IsTrustValid(string apiKey, long nonce, string realSecretApiKey) => IsValidTrustApiKey(apiKey) 
                                                                                && IsNonceValid(nonce) 

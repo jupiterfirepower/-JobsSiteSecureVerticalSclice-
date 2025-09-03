@@ -169,9 +169,11 @@ services:
      - "chmod 755 /vault/scripts/vault-init.sh && /vault/scripts/vault-init.sh"
    environment:
      VAULT_ADDR: http://vault:8200
+     #VAULT_ADDR: https://localhost:8200
    volumes:
      - ${HOME}/vault/scripts/:/vault/scripts/
      - ${HOME}/vault/pki:/vault/pki
+     - ${HOME}/vault/certs:/vault/certs
    depends_on:
      vault:
        condition: service_started
@@ -193,45 +195,6 @@ services:
     networks:
       #- postgres
       - practical-otel-net
-
-  #redis:
-    #image: redis:7.4.1-alpine
-    #restart: always
-    #ports:
-     # - 6379:6379
-    #command: redis-server --save 3600 1 --cluster-enabled no --loglevel warning --requirepass newpwd --appendonly yes
-    #volumes:
-     # - cache:/data
-    #networks:
-     # - practical-otel-net
-    #environment:
-     # - REDIS_PORT=6379
-     # - REDIS_DATABASES=1
-
-  arangodbdb:
-    container_name: arango-db
-    image: arangodb:latest
-    environment:
-      ARANGO_ROOT_PASSWORD: rootpassword
-    ports:
-      - 8529:8529
-    volumes:
-      - arangodb_data_container:/var/lib/arangodb3
-      - arangodb_apps_data_container:/var/lib/arangodb3-apps
-
-  dragonfly:
-    image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
-    ulimits:
-      memlock: -1
-    command: dragonfly --requirepass "${REDIS_PASSWORD}" --admin_nopass --cache_mode --proactor_threads=4
-    ports:
-      - 6379:6379
-    # For better performance, consider `host` mode instead `port` to avoid docker NAT.
-    # `host` mode is NOT currently supported in Swarm Mode.
-    # https://docs.docker.com/compose/compose-file/compose-file-v3/#network_mode
-    #network_mode: "host"
-    volumes:
-      - dragonflydata:/data
 
   keycloak:
       image: quay.io/keycloak/keycloak:latest
@@ -256,27 +219,6 @@ services:
         - practical-otel-net
       depends_on:
         - postgres
-
-  mssql:
-    container_name: mssql-db
-    user: root
-    #hostname: mssql-db
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    environment:
-      ACCEPT_EULA: 'Y'
-      MSSQL_SA_PASSWORD: 'Admin@123'
-      MSSQL_DATA_DIR: /var/opt/mssql/data
-      MSSQL_PID: 'Developer'
-      MSSQL_TCP_PORT: 1433
-    ports:
-      - 1433:1433
-    volumes:
-      - ${HOME}/mssql/data/backup:/var/opt/mssql/backup
-      - ${HOME}/mssql/data/data:/var/opt/mssql/data
-      - ${HOME}/mssql/data/log:/var/opt/mssql/log
-      - ${HOME}/mssql/data/secrets:/var/opt/mssql/secrets
-    networks:
-      - practical-otel-net
 
   prometheus:
     image: prom/prometheus:latest
@@ -316,22 +258,6 @@ services:
     networks:
       - practical-otel-net
 
-  db2:
-    image: ibmcom/db2
-    container_name: db2_container
-    privileged: true
-    ports:
-      - "50000:50000"
-    environment:
-      - DB2INST1=db2_user
-      - DB2INST1_PASSWORD=newpwd
-      - DBNAME=testdb
-      - LICENSE=accept
-  volumes:
-      - /home/${user}/Work/project/backup:/database # Mount the directory
-  networks:
-      - practical-otel-net
-
 networks:
   practical-otel-net:
     name: practical-otel-net
@@ -340,6 +266,4 @@ networks:
 volumes:
   cache:
     driver: local
-  dragonflydata:
-  arangodb_data_container:
-  arangodb_apps_data_container:
+

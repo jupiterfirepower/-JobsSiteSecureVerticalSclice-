@@ -1,0 +1,137 @@
+openssl genpkey -algorithm RSA -out private.key -aes256
+openssl req -new -key private.key -out certificate.csr
+
+
+# Interactive
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365
+
+# Non-interactive and 10 years expiration
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 3650 -nodes -subj "/C=UA/ST=MK/L=Mykolayiv//O=/OU=/CN=vault"
+
+
+openssl req -x509 -newkey ed25519 -days 3650 \
+  -noenc -keyout serverv.key -out serverv.crt -subj "/C=UA/ST=MR/L=Mykolayiv/CN=vault" \
+  -addext "subjectAltName=DNS:vault,DNS:localhost,DNS:host.docker.internal,IP:127.0.0.1"
+
+openssl req -x509 -newkey rsa:4096 -days 3650 \
+  -noenc -keyout serverv.key -out serverv.crt -subj "/C=UA/ST=MR/L=Mykolayiv/CN=vault" \
+  -addext "subjectAltName=DNS:vault,DNS:localhost,DNS:host.docker.internal,IP:127.0.0.1"
+  
+  
+  
+openssl genrsa -aes256 -out rootCA.key 4096
+openssl req -x509 -new -nodes -key rootCA.key -sha256 -days 3650 -out rootCA.crt -subj "/C=UA/ST=MK/L=Mykolayiv//O=/OU=/CN=root"
+openssl genrsa -out server.vault.key 4096
+
+openssl req -new -sha256 -key server.vault.key -subj "/C=UA/ST=MK/L=Mykolayiv/CN=vault" -out server.vault.csr \
+-addext "subjectAltName=DNS:vault,DNS:localhost,DNS:host.docker.internal,IP:127.0.0.1"
+
+openssl req -in server.vault.csr -noout -text
+
+openssl x509 -req -extfile <(printf "subjectAltName=DNS:vault,DNS:localhost,DNS:host.docker.internal,IP:127.0.0.1") \
+-in server.vault.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -out server.vault.crt -days 3650 -sha256
+
+openssl x509 -in server.vault.crt -text -noout
+
+vault
+
+docker cp ~/vault/certs/rootCA.crt vault:/usr/local/share/ca-certificates/my-ca-cert.crt || true
+docker cp ~/vault/certs/server.vault.crt vault:/usr/local/share/ca-certificates/my-ca-cert.crt || true
+
+
+docker cp ~/vault/certs/server.vault.crt reference-api:/usr/local/share/ca-certificates/server.vault.crt || true
+docker exec -it -u root reference-api sh -c "chmod 777 /usr/local/share/ca-certificates/server.vault.crt" || true
+docker exec -it -u root reference-api sh -c "update-ca-certificates" || true
+
+  
+  
+    openssl genrsa -out server.key 2048
+
+    Create an OpenSSL configuration file (e.g., openssl.cnf):
+
+This file defines the certificate details, including the SANs.
+Code
+
+    [ req ]
+    default_bits = 2048
+    prompt = no
+    default_md = sha256
+    distinguished_name = req_distinguished_name
+    x509_extensions = v3_req
+
+    [ req_distinguished_name ]
+    C = US
+    ST = State
+    L = City
+    O = Organization
+    OU = OrganizationalUnit
+    CN = YourCommonName.com ; This can be a primary domain or left generic
+
+    [ v3_req ]
+    keyUsage = nonRepRepudiation, digitalSignature, keyEncipherment
+    extendedKeyUsage = serverAuth
+    subjectAltName = @alt_names
+
+    [ alt_names ]
+    DNS.1 = yourdomain.com
+    DNS.2 = www.yourdomain.com
+    DNS.3 = anotherdomain.com
+    DNS.4 = cname.yourdomain.com ; Your CNAME goes here
+    IP.1 = 192.168.1.100 ; Optional: if you need an IP address
+
+    Replace the placeholder values in req_distinguished_name with your actual information.
+
+In the alt_names section, list all the DNS names (including CNAMEs) and optionally IP addresses that the certificate should be valid for, using DNS.X and IP.X respectively.
+
+    Generate the self-signed certificate using the configuration file:
+
+Code
+
+    openssl req -x509 -new -nodes -key server.key -sha256 -days 365 -out server.crt -config openssl.cnf
+
+    -x509: Creates a self-signed certificate.
+
+-new: Generates a new certificate request.
+-nodes: No DES encryption for the private key.
+-key server.key: Specifies the private key to use.
+-sha256: Uses SHA256 for signing.
+-days 365: Sets the certificate validity period to 365 days.
+-out server.crt: Specifies the output file for the certificate.
+-config openssl.cnf: Specifies the configuration file to use.
+
+This process will generate server.key (private key) and server.crt (self-signed certificate) which includes the specified CNAME and other hostnames in the Subject Alternative Names.
+
+openssl req -x509 -newkey rsa:4096 -keyout server.key -out server.csr -sha256 -days 9999 -nodes -subj "/C=Ukraine/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost"
+sudo dnf install openssl
+openssl req -x509 -newkey rsa:4096 -keyout server.key -out server.csr -sha256 -days 9999 -nodes -subj "/C=Ukraine/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost"
+openssl req -x509 -newkey rsa:4096 -keyout server.key -out server.csr -sha256 -days 9999 -nodes -subj "/C=UA/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost"
+
+openssl pkcs12 -in aspnetapp.pfx -clcerts -nokeys -out cacert.crt
+docker compose -f docker-compose-postres.yml up -d
+openssl genrsa -out /home/jupiter/doc-cert/vacancy-api-cert.key 4096
+openssl req -x509 -new -nodes -key /home/jupiter/doc-cert/vacancy-api-cert.key -sha256 -days 9999 -out /home/jupiter/doc-cert/vacancy-api-cert.cert -subj "/C=UA/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost" -addext subjectAltName=DNS:localhost, DNS:host.docker.internal, IP:127.0.0.1
+openssl req -x509 -new -nodes -key /home/jupiter/doc-cert/vacancy-api-cert.key -sha256 -days 9999 -out /home/jupiter/doc-cert/vacancy-api-cert.cert -subj "/C=UA/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost" -addext subjectAltName="DNS:localhost, DNS:host.docker.internal, IP:127.0.0.1"
+openssl pkcs12 -export -out /home/jupiter/doc-cert/vacancy-api-cert.pfx -inkey /home/jupiter/doc-cert/vacancy-api-cert.key -in /home/jupiter/doc-cert/vacancy-api-cert.cert -passout pass:dfvgbh
+
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 9999 -passout pass:dfvgbh -subj "/C=UA/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost" -addext subjectAltName="DNS:localhost, IP:127.0.0.1, IP:::1, DNS:host.docker.internal, DNS:host.containers.internal"
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 9999 -passout pass:dfvgbh -subj "/C=UA/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost" -addext subjectAltName="DNS:localhost, IP:127.0.0.1, IP:::1, DNS:host.docker.internal, DNS:host.containers.internal"
+
+openssl req -x509 -newkey rsa:4096 -keyout  /config/key.pem -out  /config/cert.pem -days 9999 -passout pass:dfvgbh -subj "/C=UA/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost" -addext subjectAltName="DNS:localhost, IP:127.0.0.1, IP:::1, DNS:host.docker.internal, DNS:host.containers.internal"
+openssl req -x509 -newkey rsa:4096 -keyout  key.pem -out  cert.pem -days 9999 -passout pass:dfvgbh -subj "/C=UA/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost" -addext subjectAltName="DNS:localhost, IP:127.0.0.1, IP:::1, DNS:host.docker.internal, DNS:host.containers.internal"
+
+FULL
+openssl req -x509 -newkey rsa:4096 -keyout  /config/key.pem -out  /config/cert.pem -days 9999 -passout pass:$CERT_PASSWORD -subj "/C=UA/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost" -addext subjectAltName="DNS:localhost, IP:127.0.0.1, IP:::1, DNS:host.docker.internal, DNS:host.containers.internal"
+openssl req -x509 -newkey rsa:4096 -keyout  server.key.pem -out  server.cert.pem -days 9999 -passout pass:$CERT_PASSWORD -subj "/C=UA/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost" -addext subjectAltName="DNS:localhost, IP:127.0.0.1, IP:::1, DNS:host.docker.internal, DNS:host.containers.internal"
+openssl req -x509 -newkey rsa:4096 -keyout  server.key.pem -out  server.cert.pem -days 9999 -passout pass:12345 -subj "/C=UA/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost" -addext subjectAltName="DNS:localhost, IP:127.0.0.1, IP:::1, DNS:host.docker.internal, DNS:host.containers.internal"
+
+openssl genrsa -out client.key.pem 4096
+openssl req -new -key client.key.pem -out client.req.pem -subj "/C=UA/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost" -addext subjectAltName="DNS:localhost, IP:127.0.0.1, IP:::1, DNS:host.docker.internal, DNS:host.containers.internal"
+openssl x509 -req -days 9999 -in client.req.pem -CA server.cert.pem -CAkey server.key.pem -CAcreateserial -out client.cert.pem -addext "extendedKeyUsage = clientAuth"
+openssl x509 -req -days 9999 -in client.req.pem -CA server.cert.pem -CAkey server.key.pem -CAcreateserial -out client.cert.pem -extendedKeyUsage "clientAuth"
+openssl -help
+openssl x509 -req -days 9999 -in client.req.pem -CA server.cert.pem -CAkey server.key.pem -CAcreateserial -out client.cert.pem -extfile <(echo -e "subjectAltName=extendedKeyUsage=clientAuth")
+openssl req -new -key client.key.pem -out client.req.pem -subj "/C=UA/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost" -addext subjectAltName="DNS:localhost, IP:127.0.0.1, IP:::1, DNS:host.docker.internal, DNS:host.containers.internal\nextendedKeyUsage=clientAuth"
+openssl x509 -req -days 9999 -in client.req.pem -CA server.cert.pem -CAkey server.key.pem -CAcreateserial -out client.cert.pem
+openssl verify -CAfile server.cert.pem  client.cert.pem
+  

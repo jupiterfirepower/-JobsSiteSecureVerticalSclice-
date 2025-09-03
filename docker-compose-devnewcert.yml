@@ -19,7 +19,7 @@ services:
       - 7007:7007
     environment:
       #- ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_ENVIRONMENT=DockerCert
       - ASPNETCORE_URLS=https://+:7007
       #- ASPNETCORE_HTTPS_PORT=7007
       #- ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
@@ -42,7 +42,7 @@ services:
       - 7057:7057
     environment:
       #- ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_ENVIRONMENT=DockerCert
       - ASPNETCORE_URLS=https://+:7057
       #- ASPNETCORE_HTTPS_PORT=7007
       #- ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
@@ -65,7 +65,7 @@ services:
       - 7161:7161
     environment:
       #- ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_ENVIRONMENT=DockerCert
       - ASPNETCORE_URLS=https://+:7161
       #- ASPNETCORE_HTTPS_PORT=7007
       #- ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
@@ -87,7 +87,7 @@ services:
     ports:
       - 7114:7114
     environment:
-      - ASPNETCORE_ENVIRONMENT=Docker3
+      - ASPNETCORE_ENVIRONMENT=DockerCert
       - ASPNETCORE_URLS=https://+:7114
       - ASPNETCORE_HTTPS_PORT=7114
     volumes:
@@ -112,7 +112,7 @@ services:
       - 7046:7046
     environment:
       #- ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_ENVIRONMENT=DockerCert
       - ASPNETCORE_URLS=https://+:7046
       #- ASPNETCORE_HTTPS_PORT=7007
       #- ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
@@ -129,7 +129,35 @@ services:
     image: hashicorp/consul:latest
     container_name: consul
     ports:
-      - 8500:8500
+      - 8500:8500 # Exposing HTTP API (optional, for non-secure access)
+      - 8501:8501 # Exposing HTTPS API
+      #- 8501:8501 # HTTPS API port
+      #- 8301:8301 # Serf LAN
+      #- 8301:8301/udp # Serf LAN UDP
+    environment:
+      CONSUL_LOCAL_CONFIG: |
+        {
+          "server": true, 
+          "bootstrap_expect": 1, 
+          "data_dir": "/consul/data", 
+          "tls": {
+              "defaults": {
+                 "verify_incoming": false, 
+                 "verify_outgoing": false
+              }, 
+              "https": {
+                 "cert_file": "/consul/config/certs/consul.crt", 
+                 "key_file": "/consul/config/certs/consul.key"
+              }
+          },
+          "ports": {
+             "https": 8501
+          }
+        }
+  #    - CONSUL_LOCAL_CONFIG={"server": true, "bootstrap_expect": 1, "data_dir": "/consul/data", "tls": {"defaults": {"verify_incoming": true, "verify_outgoing": true}, "https": {"port": 8501, "cert_file": "/consul/config/certs/consul.crt", "key_file": "/consul/config/certs/consul.key"}, "ca_file": "/consul/config/certs/ca.crt"}}}
+   # "port": 8500, "ca_file": "/consul/config/certs/ca.crt"
+    volumes:
+      - ./consul/certs:/consul/config/certs # Mount your certs directory
 
   vault:
     image: hashicorp/vault:latest
@@ -141,8 +169,8 @@ services:
     cap_add:
       - IPC_LOCK
     environment:
-      - VAULT_ADDR=http://127.0.0.1:8200
-      - VAULT_API_ADDR=http://127.0.0.1:8200
+      - VAULT_ADDR=https://127.0.0.1:8200
+      - VAULT_API_ADDR=https://127.0.0.1:8200
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
@@ -156,7 +184,7 @@ services:
       #- /home/jupiter/volumes/vault/:/vault/:rw
     healthcheck:
       retries: 5
-    command: vault server -config=/vault/config/config.hcl
+    command: vault server -config=/vault/config/configcert.hcl
     #networks:
     #  - practical-otel-net
 
@@ -166,12 +194,17 @@ services:
    command:
      - "sh"
      - "-c"
-     - "chmod 755 /vault/scripts/vault-init.sh && /vault/scripts/vault-init.sh"
+     - "chmod 755 /vault/scripts/vault-init-cert.sh && /vault/scripts/vault-init-cert.sh"
    environment:
-     VAULT_ADDR: http://vault:8200
+     VAULT_ADDR: https://vault:8200
+     VAULT_CACERT: /vault/certs/server.vault.crt
+     #VAULT_CLIENT_CERT: /vault/certs/server.vault.crt
+     #VAULT_CLIENT_KEY: /vault/certs/server.vault.key
+     #VAULT_ADDR: https://localhost:8200
    volumes:
      - ${HOME}/vault/scripts/:/vault/scripts/
      - ${HOME}/vault/pki:/vault/pki
+     - ${HOME}/vault/certs:/vault/certs
    depends_on:
      vault:
        condition: service_started
@@ -193,45 +226,6 @@ services:
     networks:
       #- postgres
       - practical-otel-net
-
-  #redis:
-    #image: redis:7.4.1-alpine
-    #restart: always
-    #ports:
-     # - 6379:6379
-    #command: redis-server --save 3600 1 --cluster-enabled no --loglevel warning --requirepass newpwd --appendonly yes
-    #volumes:
-     # - cache:/data
-    #networks:
-     # - practical-otel-net
-    #environment:
-     # - REDIS_PORT=6379
-     # - REDIS_DATABASES=1
-
-  arangodbdb:
-    container_name: arango-db
-    image: arangodb:latest
-    environment:
-      ARANGO_ROOT_PASSWORD: rootpassword
-    ports:
-      - 8529:8529
-    volumes:
-      - arangodb_data_container:/var/lib/arangodb3
-      - arangodb_apps_data_container:/var/lib/arangodb3-apps
-
-  dragonfly:
-    image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
-    ulimits:
-      memlock: -1
-    command: dragonfly --requirepass "${REDIS_PASSWORD}" --admin_nopass --cache_mode --proactor_threads=4
-    ports:
-      - 6379:6379
-    # For better performance, consider `host` mode instead `port` to avoid docker NAT.
-    # `host` mode is NOT currently supported in Swarm Mode.
-    # https://docs.docker.com/compose/compose-file/compose-file-v3/#network_mode
-    #network_mode: "host"
-    volumes:
-      - dragonflydata:/data
 
   keycloak:
       image: quay.io/keycloak/keycloak:latest
@@ -256,27 +250,6 @@ services:
         - practical-otel-net
       depends_on:
         - postgres
-
-  mssql:
-    container_name: mssql-db
-    user: root
-    #hostname: mssql-db
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    environment:
-      ACCEPT_EULA: 'Y'
-      MSSQL_SA_PASSWORD: 'Admin@123'
-      MSSQL_DATA_DIR: /var/opt/mssql/data
-      MSSQL_PID: 'Developer'
-      MSSQL_TCP_PORT: 1433
-    ports:
-      - 1433:1433
-    volumes:
-      - ${HOME}/mssql/data/backup:/var/opt/mssql/backup
-      - ${HOME}/mssql/data/data:/var/opt/mssql/data
-      - ${HOME}/mssql/data/log:/var/opt/mssql/log
-      - ${HOME}/mssql/data/secrets:/var/opt/mssql/secrets
-    networks:
-      - practical-otel-net
 
   prometheus:
     image: prom/prometheus:latest
@@ -316,22 +289,6 @@ services:
     networks:
       - practical-otel-net
 
-  db2:
-    image: ibmcom/db2
-    container_name: db2_container
-    privileged: true
-    ports:
-      - "50000:50000"
-    environment:
-      - DB2INST1=db2_user
-      - DB2INST1_PASSWORD=newpwd
-      - DBNAME=testdb
-      - LICENSE=accept
-  volumes:
-      - /home/${user}/Work/project/backup:/database # Mount the directory
-  networks:
-      - practical-otel-net
-
 networks:
   practical-otel-net:
     name: practical-otel-net
@@ -340,6 +297,4 @@ networks:
 volumes:
   cache:
     driver: local
-  dragonflydata:
-  arangodb_data_container:
-  arangodb_apps_data_container:
+

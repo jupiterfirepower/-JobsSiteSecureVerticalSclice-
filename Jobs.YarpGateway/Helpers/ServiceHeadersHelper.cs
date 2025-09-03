@@ -3,6 +3,7 @@ using DotNetEnv;
 using Jobs.Common.Constants;
 using Jobs.Core.Providers.Vault;
 using Jobs.Core.Services;
+using Jobs.YarpGateway.Settings;
 using VaultSharp;
 using VaultSharp.Core;
 
@@ -41,6 +42,10 @@ public class ServiceHeadersHelper
 
         var vaultUri = Environment.GetEnvironmentVariable("VAULT_ADDR");
         var vaultToken = Environment.GetEnvironmentVariable("VAULT_TOKEN");
+        Console.WriteLine($"VAULT_ADDR - {vaultUri}");
+
+        vaultUri = AppSettings.VaultServerUrl;
+        Console.WriteLine($"vaultUri: {vaultUri}");
         
         try
         {

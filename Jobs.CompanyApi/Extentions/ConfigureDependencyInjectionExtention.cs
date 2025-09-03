@@ -8,6 +8,7 @@ using Jobs.Core.Contracts;
 using Jobs.Core.Contracts.Providers;
 using Jobs.Core.DataModel;
 using Jobs.Core.Managers;
+using Jobs.Core.Options;
 using Jobs.Core.Providers;
 using Jobs.Core.Providers.Vault;
 using Jobs.Core.Services;
@@ -27,12 +28,23 @@ public static class ConfigureDependencyInjectionExtention
         Console.WriteLine($"companyServiceDefApiKey: {companyServiceDefApiKey}");
         
         var vaultUri = Environment.GetEnvironmentVariable("VAULT_ADDR");
+        Console.WriteLine($"VAULT_ADDR: {vaultUri}");
         var vaultToken = Environment.GetEnvironmentVariable("VAULT_TOKEN");
+        
+        var vaultSettings = configuration.GetSection("VaultSetting").Get<VaultOptions>();
+        var vaultServerUri = vaultSettings?.VaultServerUrl + ":" + vaultSettings?.VaultServerPort;
+        Console.WriteLine($"vaultSettings VaultServerUrl: {vaultServerUri}");
+        
+        CryptOptions cryptOptions = new();
+
+        configuration
+            .GetRequiredSection(nameof(CryptOptions))
+            .Bind(cryptOptions);
 
         try
         {
             // Hashicorp Vault Secrets.
-            var vaultSecretsProvider = new VaultSecretProvider(vaultUri, vaultToken);
+            var vaultSecretsProvider = new VaultSecretProvider(vaultServerUri ?? vaultUri, vaultToken);
             
             var task = Task.Run(async () => await vaultSecretsProvider.GetSecretValueAsync("secrets/services/company", "SecretKey", "secrets"));
             task.Wait();
@@ -48,17 +60,23 @@ public static class ConfigureDependencyInjectionExtention
             
             Console.WriteLine($"vacancySecretKey: {companySecretKey}");
             Console.WriteLine($"vacancyServiceDefApiKey: {companyServiceDefApiKey}");
+            
+            var taskThird = Task.Run(async () => await vaultSecretsProvider.GetSecretValueAsync("secrets/services/reference", "PKey", "secrets"));
+            taskThird.Wait();
+            
+            var vaultPKey = taskThird.Result;
+            cryptOptions.PKey = vaultPKey ?? cryptOptions.PKey;
+            
+            var taskFour = Task.Run(async () => await vaultSecretsProvider.GetSecretValueAsync("secrets/services/reference", "IV", "secrets"));
+            taskFour.Wait();
+            
+            var vaultIv = taskFour.Result;
+            cryptOptions.IV = vaultIv ?? cryptOptions.IV;
         }
         catch (VaultApiException e)
         {
             Console.WriteLine(e.Message);
         }
-        
-        CryptOptions cryptOptions = new();
-
-        configuration
-            .GetRequiredSection(nameof(CryptOptions))
-            .Bind(cryptOptions);
 
         services.AddScoped<IGenericRepository<Company>, CompanyRepository>();
         services.AddScoped<IApiKeyStorageServiceProvider, MemoryApiKeyStorageServiceProvider>();

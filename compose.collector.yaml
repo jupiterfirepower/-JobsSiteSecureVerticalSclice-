@@ -21,4 +21,4 @@ services:
         - prometheus
         - loki
       networks:
-        - practical-otel-net  
+        - practical-otel-net

@@ -1,0 +1,7 @@
+SecretKey: 0103dafb-988e-8034-8067-250f1fad1c20
+DefaultApiKey: e8dd6e29-82ef-468e-b3d5-e47aa97a1c45
+CryptPrivateKey: UN52LQjEnyljtspTMiXEgbFUfICJ3soQZmaqiSjHti4=
+CryptIV: UoxQtPfx5dTQvQ0wy8YzyA==
+SecretKeyBase64: xku2jvZmd6LoCsFJBNYT+nELMQgdLZjYPNCxJJ3Qs6hOFxZcLmXYQ8VN5UcEx/B1
+DefaultApiKeyBase64: v6S7uBYgo8X07LEbIOTxaL9mgeiiz654mOoQSGjCDblMBL+Xh+Yk5UhLcTzwaM4T
+AppIdBase64: UZspKQ/jS4iaux08eLJd1mb40UG2vpkFkwDfOJ2K+HPEWR7cFDLMAnloyeoygJyC

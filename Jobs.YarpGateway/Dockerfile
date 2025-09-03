@@ -11,8 +11,14 @@ COPY ["Jobs.YarpGateway/Jobs.YarpGateway.csproj", "Jobs.YarpGateway/"]
 COPY ["Jobs.Common/Jobs.Common.csproj", "Jobs.Common/"]
 COPY ["Jobs.Core/Jobs.Core.csproj", "Jobs.Core/"]
 
-COPY ["dev-cert/server.cert.pem", "Jobs.VacancyApi/dev-cert/server.cert.pem"]
-COPY ["dev-cert/server.key.pem", "Jobs.VacancyApi/dev-cert/server.key.pem"]
+COPY ["dev-cert/server.cert.pem", "Jobs.YarpGateway/dev-cert/server.cert.pem"]
+COPY ["dev-cert/server.key.pem", "Jobs.YarpGateway/dev-cert/server.key.pem"]
+
+COPY ["dev-cert/server.vault.crt", "Jobs.YarpGateway/dev-cert/server.vault.crt"]
+COPY ["dev-cert/server.vault.key", "Jobs.YarpGateway/dev-cert/server.vault.key"]
+
+COPY ["dev-cert/rootCA.crt", "Jobs.YarpGateway/dev-cert/server.rootCA.crt"]
+COPY ["dev-cert/rootCA.key", "Jobs.YarpGateway/dev-cert/server.rootCA.key"]
 
 RUN dotnet restore "Jobs.YarpGateway/Jobs.YarpGateway.csproj"
 COPY . .
@@ -28,6 +34,12 @@ RUN mkdir /config
 
 COPY ["dev-cert/server.cert.pem", "/config/cert.pem"]
 COPY ["dev-cert/server.key.pem", "/config/key.pem"]
+
+COPY ["dev-cert/server.vault.crt", "/config/server.vault.crt"]
+COPY ["dev-cert/server.vault.key", "/config/server.vault.key"]
+
+COPY ["dev-cert/rootCA.crt", "/config/server.rootCA.crt"]
+COPY ["dev-cert/rootCA.key", "/config/server.rootCA.key"]
 
 # Generate certificate with specified password
 # RUN openssl req -x509 -newkey rsa:4096 -keyout  /config/key.pem -out  /config/cert.pem -days 9999 -passout pass:$CERT_PASSWORD -subj "/C=UA/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost" -addext subjectAltName="DNS:localhost, IP:127.0.0.1, IP:::1, DNS:host.docker.internal, DNS:host.containers.internal"
@@ -75,11 +87,40 @@ RUN cp ./config/key.pem $ASPNETCORE_Kestrel__Certificates__Default__KeyPath
 RUN chmod 644 $ASPNETCORE_Kestrel__Certificates__Default__Path 
 RUN chmod +x $ASPNETCORE_Kestrel__Certificates__Default__Path
 # change file ownership for certificate file
-# add generated certificate to trusted certificate list on the system
-RUN cat $ASPNETCORE_Kestrel__Certificates__Default__Path >> /etc/ssl/certs/ca-certificates.crt
+
 # set file permissions for key file
 RUN chmod 644 $ASPNETCORE_Kestrel__Certificates__Default__KeyPath
 RUN chmod +x $ASPNETCORE_Kestrel__Certificates__Default__KeyPath
+
+RUN cp ./config/server.vault.crt /usr/local/share/ca-certificates/server.vault.crt
+RUN cp ./config/server.vault.key /usr/local/share/ca-certificates/server.vault.key
+
+# set file permisions for certificate file
+RUN chmod 644 /usr/local/share/ca-certificates/server.vault.crt
+RUN chmod +x /usr/local/share/ca-certificates/server.vault.crt
+
+# set file permissions for key file
+RUN chmod 644 /usr/local/share/ca-certificates/server.vault.key
+RUN chmod +x /usr/local/share/ca-certificates/server.vault.key
+
+RUN cp ./config/server.rootCA.crt /usr/local/share/ca-certificates/server.rootCA.crt
+RUN cp ./config/server.rootCA.key /usr/local/share/ca-certificates/server.rootCA.key
+
+# set file permisions for certificate file
+RUN chmod 644 /usr/local/share/ca-certificates/server.rootCA.crt
+RUN chmod +x /usr/local/share/ca-certificates/server.rootCA.crt
+
+# set file permissions for key file
+RUN chmod 644 /usr/local/share/ca-certificates/server.rootCA.key
+RUN chmod +x /usr/local/share/ca-certificates/server.rootCA.key
+
+# add generated certificate to trusted certificate list on the system
+RUN cat $ASPNETCORE_Kestrel__Certificates__Default__Path >> /etc/ssl/certs/ca-certificates.crt
+
+RUN cat /usr/local/share/ca-certificates/server.rootCA.crt >> /etc/ssl/certs/ca-certificates.crt
+
+RUN cat /usr/local/share/ca-certificates/server.vault.crt >> /etc/ssl/certs/ca-certificates.crt
+
 # change file ownership for key file
 RUN update-ca-certificates
 

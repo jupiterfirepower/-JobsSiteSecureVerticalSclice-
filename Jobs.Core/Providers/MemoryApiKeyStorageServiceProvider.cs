@@ -23,10 +23,10 @@ public class MemoryApiKeyStorageServiceProvider : IApiKeyStorageServiceProvider
         if (apiKey == null)
             return false;
         
-        /*if (!apiKey.Expiration.HasValue)
+        if (!apiKey.Expiration.HasValue)
         {
             return true;
-        }*/
+        }
 
         if (apiKey.Expiration.HasValue && apiKey.Expiration >= DateTime.UtcNow)
         {

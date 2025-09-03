@@ -18,7 +18,7 @@ public static class ApiSecurityHelper
         {
             return true;
         }
-        
+
         var signedNonceReal = cryptService.Decrypt(signedNonce);
         var (longNonce , resultParse) = signedNonceService.IsSignedNonceValid(signedNonceReal);
 
@@ -29,6 +29,7 @@ public static class ApiSecurityHelper
 
         if (!resultParse)
         {
+            Console.WriteLine($"ApiSecurityHelper resultParse : false");
             return true;
         }
             

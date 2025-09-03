@@ -57,7 +57,7 @@ try
     Console.WriteLine($"ContentRootPath: {builder.Environment.ContentRootPath}");
     Console.WriteLine($"EnvironmentName: {builder.Environment.EnvironmentName}");
     
-    builder.Configuration
+    var config = builder.Configuration
         .SetBasePath(builder.Environment.ContentRootPath)
         .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
@@ -92,11 +92,15 @@ try
     Env.Load();
     //Env.TraversePath().Load();
     
+    var vaultSettings = builder.Configuration.GetSection("VaultSetting").Get<VaultOptions>();
+    var vaultServerUri = vaultSettings?.VaultServerUrl + ":" + vaultSettings?.VaultServerPort;
+    Console.WriteLine($"vaultSettings VaultServerUrl: {vaultServerUri}");
     var vaultUri = Environment.GetEnvironmentVariable("VAULT_ADDR");
+    Console.WriteLine($"vaultUri: {vaultUri}");
     var vaultToken = Environment.GetEnvironmentVariable("VAULT_TOKEN");
     
     // Hashicorp Vault Secrets.
-    var vaultSecretsProvider = new VaultSecretProvider(vaultUri, vaultToken);
+    var vaultSecretsProvider = new VaultSecretProvider(vaultServerUri ?? vaultUri, vaultToken);
 
     var vaultSecretKey = await vaultSecretsProvider.GetSecretValueAsync("secrets/services/reference", "SecretKey", "secrets");
     Console.WriteLine($"vaultSecretKey: {vaultSecretKey}");

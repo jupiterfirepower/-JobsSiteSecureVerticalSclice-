@@ -2,6 +2,7 @@ namespace BlazorApp2.Settings;
 
 public static class SecureApiKey
 {
+    
     public static string AccountFirstApiKey { get; set; }
     public static string AccountSecretKey { get; set; }
     

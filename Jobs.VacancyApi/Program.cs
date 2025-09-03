@@ -86,12 +86,17 @@ try
     //Env.TraversePath().Load();
     
     var vaultUri = Environment.GetEnvironmentVariable("VAULT_ADDR");
+    Console.WriteLine($"vaultUri: {vaultUri}");
     var vaultToken = Environment.GetEnvironmentVariable("VAULT_TOKEN");
+    
+    var vaultSettings = builder.Configuration.GetSection("VaultSetting").Get<VaultOptions>();
+    var vaultServerUri = vaultSettings?.VaultServerUrl + ":" + vaultSettings?.VaultServerPort;
+    Console.WriteLine($"vaultSettings VaultServerUrl: {vaultServerUri}");
 
     try
     {
         // Hashicorp Vault Secrets.
-        var vaultSecretsProvider = new VaultSecretProvider(vaultUri, vaultToken);
+        var vaultSecretsProvider = new VaultSecretProvider(vaultServerUri ?? vaultUri, vaultToken);
 
         var vaultSecretKey = await vaultSecretsProvider.GetSecretValueAsync("secrets/services/vacancy", "SecretKey", "secrets");
         Console.WriteLine($"vaultSecretKey: {vaultSecretKey}");

@@ -3,9 +3,11 @@ using System.Net;
 using System.Net.Mime;
 using System.Security.Cryptography.X509Certificates;
 using Jobs.Common.Constants;
+using Jobs.Core.Options;
 using Jobs.YarpGateway.Contracts;
 using Jobs.YarpGateway.Helpers;
 using Jobs.YarpGateway.Services;
+using Jobs.YarpGateway.Settings;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Net.Http.Headers;
@@ -56,7 +58,15 @@ builder.Services.ConfigureHttpClientDefaults(static client =>
             handler.SslOptions.ClientCertificates = new X509Certificate2Collection(clientCert);
         })*/
 
+var vaultSettings = builder.Configuration.GetSection("VaultSetting").Get<VaultOptions>();
+var vaultServerUri = vaultSettings?.VaultServerUrl + ":" + vaultSettings?.VaultServerPort;
+Console.WriteLine($"vaultSettings VaultServerUrl: {vaultServerUri}");
+
+AppSettings.VaultServerUrl = vaultServerUri;
+
 var clientCert = new X509Certificate2("/dev-cert/client.cert.pem");
+//var clientCert = new X509Certificate2("/home/jupiter/RiderProjects/SecureVerticalSlice/JobProject//dev-cert/client.cert.pem");
+    
 
 // Add YARP reverse proxy services and load configuration from appsettings.json
 builder.Services.AddReverseProxy()
