@@ -83,36 +83,28 @@ ENV ASPNETCORE_Kestrel__Certificates__Default__Password=$CERT_PASSWORD
 # copy certificate files to config directory
 RUN cp ./config/cert.pem $ASPNETCORE_Kestrel__Certificates__Default__Path 
 RUN cp ./config/key.pem $ASPNETCORE_Kestrel__Certificates__Default__KeyPath
+
 # set file permisions for certificate file
 RUN chmod 644 $ASPNETCORE_Kestrel__Certificates__Default__Path 
-RUN chmod +x $ASPNETCORE_Kestrel__Certificates__Default__Path
 # change file ownership for certificate file
-
 # set file permissions for key file
 RUN chmod 644 $ASPNETCORE_Kestrel__Certificates__Default__KeyPath
-RUN chmod +x $ASPNETCORE_Kestrel__Certificates__Default__KeyPath
 
 RUN cp ./config/server.vault.crt /usr/local/share/ca-certificates/server.vault.crt
 RUN cp ./config/server.vault.key /usr/local/share/ca-certificates/server.vault.key
 
 # set file permisions for certificate file
 RUN chmod 644 /usr/local/share/ca-certificates/server.vault.crt
-RUN chmod +x /usr/local/share/ca-certificates/server.vault.crt
-
 # set file permissions for key file
 RUN chmod 644 /usr/local/share/ca-certificates/server.vault.key
-RUN chmod +x /usr/local/share/ca-certificates/server.vault.key
 
 RUN cp ./config/server.rootCA.crt /usr/local/share/ca-certificates/server.rootCA.crt
 RUN cp ./config/server.rootCA.key /usr/local/share/ca-certificates/server.rootCA.key
 
 # set file permisions for certificate file
 RUN chmod 644 /usr/local/share/ca-certificates/server.rootCA.crt
-RUN chmod +x /usr/local/share/ca-certificates/server.rootCA.crt
-
 # set file permissions for key file
 RUN chmod 644 /usr/local/share/ca-certificates/server.rootCA.key
-RUN chmod +x /usr/local/share/ca-certificates/server.rootCA.key
 
 # add generated certificate to trusted certificate list on the system
 RUN cat $ASPNETCORE_Kestrel__Certificates__Default__Path >> /etc/ssl/certs/ca-certificates.crt

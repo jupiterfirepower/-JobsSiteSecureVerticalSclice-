@@ -1,0 +1,22 @@
+vault operator init
+
+docker exec <vault_container_name> vault operator init -key-shares=<num_shares> -key-threshold=<num_threshold> -format=json > init-keys.json
+docker exec <vault_container_name> vault operator unseal <unseal_key_1>
+docker exec <vault_container_name> vault operator unseal <unseal_key_2>
+
+docker exec <vault_container_name> vault status
+
+docker exec -it vault vault operator init -key-shares=1 -key-threshold=3 -format=json > vault-cluster.json
+
+docker exec -it vault vault operator unseal <unseal key 1>
+docker exec -it vault vault operator unseal <unseal key 2>
+docker exec -it vault vault operator unseal <unseal key 3>
+
+docker exec -it vault vault login <root token>
+
+docker exec -it vault vault secrets enable -version=2 -path=secret kv
+docker exec -it vault vault kv put secret/foo bar=test
+docker exec -it vault vault kv get --format=json secret/foo
+
+rm -rf $HOME/vault
+mkdir -p $HOME/vault/{config,file,logs,data,certs,pki,scripts}

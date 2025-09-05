@@ -229,7 +229,7 @@ services:
 
   keycloak:
       image: quay.io/keycloak/keycloak:latest
-      command: start-dev --http-port=9009
+      #command: start-dev --http-port=9009
       #entrypoint: /opt/keycloak/bin/kc.sh start-dev --hostname-strict=false --features=hostname:v1 --hostname-port=8086
       environment:
         KC_DB : postgres
@@ -241,11 +241,27 @@ services:
         KC_DB_SCHEMA: public
         KC_HEALTH_ENABLED: true
         KC_METRICS_ENABLED: true
+        #KC_HTTP_ENABLED: true
+        KEYCLOAK_HTTPS_PORT: 8443
+        #KC_HOSTNAME_STRICT_HTTPS: true
+        #KC_HOSTNAME_STRICT_BACKCHANNEL: true
         KEYCLOAK_ADMIN: admin
         KEYCLOAK_ADMIN_PASSWORD: newpwd
+        KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/conf/server.crt
+        KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/conf/server.key
       ports:
+        - 8443:8443
         - 9003:9000
         - 9001:9009
+      volumes:
+        - ${HOME}/vault/certs/server.vault.crt:/opt/keycloak/conf/server.crt
+        - ${HOME}/vault/certs/server.vault.key:/opt/keycloak/conf/server.key
+      healthcheck:
+        test: ["CMD", "curl", "-f", "https://localhost:8443/health/ready"]
+        interval: 60s
+        timeout: 2s
+        retries: 5
+      command: start-dev --https-port 8443
       networks:
         - practical-otel-net
       depends_on:
