@@ -13,16 +13,9 @@ COPY ["Jobs.Core/Jobs.Core.csproj", "Jobs.Core/"]
 COPY ["Jobs.Dto/Jobs.Dto.csproj", "Jobs.Dto/"]
 COPY ["Jobs.Entities/Jobs.Entities.csproj", "Jobs.Entities/"]
 
-COPY ["dev-cert/server.cert.pem", "Jobs.VacancyApi/dev-cert/server.cert.pem"]
-COPY ["dev-cert/server.key.pem", "Jobs.VacancyApi/dev-cert/server.key.pem"]
+# Service Cert, RootCA for Vault, Consul, Keycloak.
+COPY ./devcerts/*  /Jobs.ReferenceApi/
 
-COPY ["dev-cert/server.vault.crt", "Jobs.VacancyApi//dev-cert/server.vault.crt"]
-COPY ["dev-cert/server.vault.key", "Jobs.VacancyApi//dev-cert/server.vault.key"]
-
-COPY ["dev-cert/rootCA.crt", "Jobs.VacancyApi//dev-cert/server.rootCA.crt"]
-COPY ["dev-cert/rootCA.key", "Jobs.VacancyApi//dev-cert/server.rootCA.key"]
-
-#COPY ["dev-certs/Jobs.Entities.csproj", "Jobs.Entities/"]
 RUN dotnet restore "Jobs.VacancyApi/Jobs.VacancyApi.csproj"
 COPY . .
 WORKDIR "/Jobs.VacancyApi"
@@ -34,15 +27,20 @@ RUN apk add openssl
 RUN mkdir /config
 
 #WORKDIR .
+COPY ./devcerts/dev/service/server.cert.pem /config/service.cert.pem
+COPY ./devcerts/dev/service/server.key.pem /config/service.key.pem
 
-COPY ["dev-cert/server.cert.pem", "/config/cert.pem"]
-COPY ["dev-cert/server.key.pem", "/config/key.pem"]
+COPY ./devcerts/dev/rootCA.crt /config/server.rootCA.crt
+COPY ./devcerts/dev/rootCA.key /config/server.rootCA.key
 
-COPY ["dev-cert/server.vault.crt", "/config/server.vault.crt"]
-COPY ["dev-cert/server.vault.key", "/config/server.vault.key"]
+COPY ./devcerts/dev/vault/server.vault.crt /config/server.vault.crt
+COPY ./devcerts/dev/vault/server.vault.key /config/server.vault.key
 
-COPY ["dev-cert/rootCA.crt", "/config/server.rootCA.crt"]
-COPY ["dev-cert/rootCA.key", "/config/server.rootCA.key"]
+COPY ./devcerts/dev/consul/server.consul.crt /config/server.consul.crt
+COPY ./devcerts/dev/consul/server.consul.key /config/server.consul.key
+
+COPY ./devcerts/dev/keycloak/server.keycloak.crt /config/server.keycloak.crt
+COPY ./devcerts/dev/keycloak/server.keycloak.key /config/server.keycloak.key
 
 # Generate certificate with specified password
 # RUN openssl req -x509 -newkey rsa:4096 -keyout  /config/key.pem -out  /config/cert.pem -days 9999 -passout pass:$CERT_PASSWORD -subj "/C=UA/ST=Mykolayiv/L=Vishneva/O=/OU=/CN=localhost" -addext subjectAltName="DNS:localhost, IP:127.0.0.1, IP:::1, DNS:host.docker.internal, DNS:host.containers.internal"
@@ -77,37 +75,52 @@ ENV ASPNETCORE_ENVIRONMENT=Docker
 # Set the urls where Kestrel is going to listen
 ENV ASPNETCORE_URLS=https://+:7114
 # location of the certificate file
-ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/usr/local/share/ca-certificates/vacancy-api-cert.crt
+ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/usr/local/share/ca-certificates/service.cert.crt
 # location of the certificate key
-ENV ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/usr/local/share/ca-certificates/vacancy-api-cert.key
+ENV ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/usr/local/share/ca-certificates/service.cert.key
 # specify password in order to open certificate key
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password=$CERT_PASSWORD
 #ENV ASPNETCORE_Kestrel__Certificates__Default__Password=dfvgbh
 # copy certificate files to config directory
-RUN cp ./config/cert.pem $ASPNETCORE_Kestrel__Certificates__Default__Path 
-RUN cp ./config/key.pem $ASPNETCORE_Kestrel__Certificates__Default__KeyPath
+RUN cp ./config/service.cert.pem $ASPNETCORE_Kestrel__Certificates__Default__Path 
+RUN cp ./config/service.key.pem $ASPNETCORE_Kestrel__Certificates__Default__KeyPath
 
 # set file permisions for certificate file
 RUN chmod 644 $ASPNETCORE_Kestrel__Certificates__Default__Path 
-# change file ownership for certificate file
 # set file permissions for key file
 RUN chmod 644 $ASPNETCORE_Kestrel__Certificates__Default__KeyPath
 
+# RootCA for Vault, Consul, Keycloak
+RUN cp ./config/server.rootCA.crt /usr/local/share/ca-certificates/server.rootCA.crt
+RUN cp ./config/server.rootCA.key /usr/local/share/ca-certificates/server.rootCA.key
+# set file permisions for certificate file
+RUN chmod 644 /usr/local/share/ca-certificates/server.rootCA.crt
+# set file permissions for key file
+RUN chmod 644 /usr/local/share/ca-certificates/server.rootCA.key
+
+# Vault
 RUN cp ./config/server.vault.crt /usr/local/share/ca-certificates/server.vault.crt
 RUN cp ./config/server.vault.key /usr/local/share/ca-certificates/server.vault.key
-
 # set file permisions for certificate file
 RUN chmod 644 /usr/local/share/ca-certificates/server.vault.crt
 # set file permissions for key file
 RUN chmod 644 /usr/local/share/ca-certificates/server.vault.key
 
-RUN cp ./config/server.rootCA.crt /usr/local/share/ca-certificates/server.rootCA.crt
-RUN cp ./config/server.rootCA.key /usr/local/share/ca-certificates/server.rootCA.key
-
+# Consul
+RUN cp ./config/server.consul.crt /usr/local/share/ca-certificates/server.consul.crt
+RUN cp ./config/server.consul.key /usr/local/share/ca-certificates/server.consul.key
 # set file permisions for certificate file
-RUN chmod 644 /usr/local/share/ca-certificates/server.rootCA.crt
+RUN chmod 644 /usr/local/share/ca-certificates/server.consul.crt
 # set file permissions for key file
-RUN chmod 644 /usr/local/share/ca-certificates/server.rootCA.key
+RUN chmod 644 /usr/local/share/ca-certificates/server.consul.key
+
+# Keycloak
+RUN cp ./config/server.keycloak.crt /usr/local/share/ca-certificates/server.keycloak.crt
+RUN cp ./config/server.keycloak.key /usr/local/share/ca-certificates/server.keycloak.key
+# set file permisions for certificate file
+RUN chmod 644 /usr/local/share/ca-certificates/server.keycloak.crt
+# set file permissions for key file
+RUN chmod 644 /usr/local/share/ca-certificates/server.keycloak.key
 
 # change file ownership for certificate file
 # add generated certificate to trusted certificate list on the system
@@ -116,6 +129,10 @@ RUN cat $ASPNETCORE_Kestrel__Certificates__Default__Path >> /etc/ssl/certs/ca-ce
 RUN cat /usr/local/share/ca-certificates/server.rootCA.crt >> /etc/ssl/certs/ca-certificates.crt
 
 RUN cat /usr/local/share/ca-certificates/server.vault.crt >> /etc/ssl/certs/ca-certificates.crt
+
+RUN cat /usr/local/share/ca-certificates/server.consul.crt >> /etc/ssl/certs/ca-certificates.crt
+
+RUN cat /usr/local/share/ca-certificates/server.keycloak.crt >> /etc/ssl/certs/ca-certificates.crt
 
 # change file ownership for key file
 RUN update-ca-certificates
