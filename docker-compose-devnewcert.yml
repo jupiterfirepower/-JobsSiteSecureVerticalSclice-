@@ -146,8 +146,8 @@ services:
                  "verify_outgoing": false
               }, 
               "https": {
-                 "cert_file": "/consul/config/certs/consul.crt", 
-                 "key_file": "/consul/config/certs/consul.key"
+                 "cert_file": "/consul/config/certs/server.consul.crt", 
+                 "key_file": "/consul/config/certs/server.consul.key"
               }
           },
           "ports": {
@@ -157,7 +157,7 @@ services:
   #    - CONSUL_LOCAL_CONFIG={"server": true, "bootstrap_expect": 1, "data_dir": "/consul/data", "tls": {"defaults": {"verify_incoming": true, "verify_outgoing": true}, "https": {"port": 8501, "cert_file": "/consul/config/certs/consul.crt", "key_file": "/consul/config/certs/consul.key"}, "ca_file": "/consul/config/certs/ca.crt"}}}
    # "port": 8500, "ca_file": "/consul/config/certs/ca.crt"
     volumes:
-      - ./consul/certs:/consul/config/certs # Mount your certs directory
+      - ./devcert/dev/consul:/consul/config/certs # Mount your certs directory
 
   vault:
     image: hashicorp/vault:latest
@@ -203,7 +203,7 @@ services:
      #VAULT_ADDR: https://localhost:8200
    volumes:
      - ${HOME}/vault/scripts/:/vault/scripts/
-     - ${HOME}/vault/pki:/vault/pki
+     #- ${HOME}/vault/pki:/vault/pki
      - ${HOME}/vault/certs:/vault/certs
    depends_on:
      vault:
@@ -248,14 +248,17 @@ services:
         KEYCLOAK_ADMIN: admin
         KEYCLOAK_ADMIN_PASSWORD: newpwd
         KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/conf/server.crt
-        KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/conf/server.key
+        KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/conf/server.keycloack.key
       ports:
         - 8443:8443
         - 9003:9000
         - 9001:9009
+      #volumes:
+      #  - ${HOME}/vault/certs/server.vault.crt:/opt/keycloak/conf/server.crt
+      #  - ${HOME}/vault/certs/server.vault.key:/opt/keycloak/conf/server.key
       volumes:
-        - ${HOME}/vault/certs/server.vault.crt:/opt/keycloak/conf/server.crt
-        - ${HOME}/vault/certs/server.vault.key:/opt/keycloak/conf/server.key
+        - ./devcert/dev/keycloack/server.keycloack.crt:/opt/keycloak/conf/server.keycloack.crt
+        - ./devcert/dev/keycloack/server.keycloack.key:/opt/keycloak/conf/server.keycloack.key
       healthcheck:
         test: ["CMD", "curl", "-f", "https://localhost:8443/health/ready"]
         interval: 60s

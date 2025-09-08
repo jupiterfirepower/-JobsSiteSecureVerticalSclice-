@@ -25,8 +25,6 @@ RUN apk add openssl
 # Make the directory for certificate export
 RUN mkdir /config
 
-#WORKDIR .
-
 COPY ./devcerts/dev/service/server.cert.pem /config/service.cert.pem
 COPY ./devcerts/dev/service/server.key.pem /config/service.key.pem
 
